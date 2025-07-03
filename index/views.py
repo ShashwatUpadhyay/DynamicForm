@@ -10,7 +10,7 @@ from .serializers import  FormSerializer, QuestionSerializer,AnswersSerializer,C
 
 class FormsAPI(APIView):
     def get(self, request):
-        forms = Form.objects.all()
+        forms = Form.objects.all().order_by('-created_at')
         print(forms)
         serializer = FormSerializer(forms,many=True)
         return Response({
@@ -88,8 +88,7 @@ class FormAPI(APIView):
                     "message" : "Something went wrong!",
                     "data" : {}
                 })
-            
-            
+                      
 class QuestionAPI(APIView):
     
     def post(self,request):
@@ -160,6 +159,8 @@ class ChoiceAPI(APIView):
     def post(self , request):
         try:
             data  = request.data
+            print(data.get('form_id'))
+            print(data.get('question_id'))
             if not data.get('form_id') or not data.get('question_id'):
                 return Response({
                     "status":False,
@@ -228,4 +229,23 @@ class ChoiceAPI(APIView):
                 "status" : False,
                 "message" : "Something went wrong!",
                 'data' : {}
+            })
+    def delete(self, request):
+        data = request.data
+        uid = data.get('option_uid')
+        print(data)
+        try:
+            choice = Choices.objects.get(uid=uid)
+            choice.delete()
+            return Response({
+                'status' : True,
+                "message" : "Option deleted sucessfully",
+                "data" : {}
+            })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status' : False,
+                "message" : "Something went wrong!",
+                "data" : {}
             })

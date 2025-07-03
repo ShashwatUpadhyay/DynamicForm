@@ -9,18 +9,29 @@ function Home() {
   const navigate = useNavigate();
 
   const handleNewForm = () => {
-    navigate('/form');
+    try {
+        axios.post(API_BASE_URL + "form/").then((res) => {
+            console.log(res.data.data.code);
+            console.log(res.data.status);
+            if (res.data.status == true){
+                console.log("success")
+                window.location.href = `/form/${res.data.data.code}`;
+            }
+        })
+        }catch(e){
+            console.log(e)
+        }
+
   };
+
 
   useEffect(() => {
     try {
       axios.get(API_BASE_URL + "forms/" ).then((res) => {
         setFormList(res.data.data);
-        console.log(res.data.data);
-        console.log(FormList);
       },[]);
         } catch (error) {
-        console.log(error);
+        console.log("While creating new form : ", error);
         }
     },[])  
 
