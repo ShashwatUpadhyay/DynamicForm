@@ -19,7 +19,7 @@ class FormSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Form
-        exclude = ['created_at','updated_at']
+        exclude = ['created_at']
     
     # def to_representation(self, instance):
     #     questions = instance.questions.all()

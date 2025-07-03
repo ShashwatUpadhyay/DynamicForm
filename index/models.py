@@ -2,12 +2,14 @@ from django.db import models
 from .choices import QUSETION_TYPE_CHOICES
 from django.contrib.auth.models import AbstractUser, User
 from utils.utility import generate_random_string
+import uuid
 # Create your models here.
 
 class User(AbstractUser, models.Model):
     email = models.EmailField(unique=True)
 
 class BaseModel(models.Model):
+    uid = models.CharField(max_length=100, default=uuid.uuid4, unique=True )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

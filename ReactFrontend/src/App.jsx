@@ -5,6 +5,7 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import './index.css'
 import Form from './components/form/from.jsx'
+import Home from './components/form/home.jsx'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -12,7 +13,8 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Form />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/form/:code" element={<Form />} />
       </Routes>
     </>
   )

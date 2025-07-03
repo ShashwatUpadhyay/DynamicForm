@@ -3,18 +3,33 @@ from rest_framework.views import  APIView
 from rest_framework.response import  Response
 from .models import (Form,Question,Choices,Answers,User)
 from .serializers import  FormSerializer, QuestionSerializer,AnswersSerializer,ChoicesSerializer,ResponseSerializer
+
 # Create your views here.
 
 # GET,  POST, PUT, PATCH, DELETE
 
-class FormAPI(APIView):
-    
+class FormsAPI(APIView):
     def get(self, request):
+        forms = Form.objects.all()
+        print(forms)
+        serializer = FormSerializer(forms,many=True)
         return Response({
             "status" : "success",
-            "message" : "Got get request"
+            "message" : "Got get request",
+            "data" : serializer.data
         })
         
+class FormAPI(APIView):
+    def get(self, request):
+        code = request.GET.get('code')
+        form = Form.objects.get(code=code)
+        serializer = FormSerializer(form)
+        return Response({
+            "status" : "success",
+            "message" : "Form fetched sucessfully!",
+            "data" : serializer.data
+        })
+ 
     def post(self, request):
         try:
             # data = request.data 
