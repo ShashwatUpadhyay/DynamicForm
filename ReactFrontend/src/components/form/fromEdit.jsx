@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback, PureComponent } from 'react'
 import { Link, useParams } from "react-router-dom";
 import { API_BASE_URL } from "/config";
+import debounce from 'lodash/debounce';
 import axios from 'axios';
 
 
@@ -11,7 +12,7 @@ const QUESTION_TYPES = [
   { value: 'long answer', label: 'Long Answer' },
 ];
 
-function Form() {
+function FormEdit() {
     const { code } = useParams();
     const [FormData, setFormData] = useState([]);
     const [formTitle, setFormTitle] = useState()
@@ -26,22 +27,58 @@ function Form() {
     //     required: false,
     //     },
     // ]);
+   const EditForm = (fid,field,value) => {
+      var data = {};
+      if (field === 'title'){
+        data = {
+          "form_id":fid,
+          "title" : value
+        }
+      }else if(field === 'description'){
+        data = {
+          "form_id":fid,
+          "description" : value
+        }
+      }
 
-    const addQuestion = () => {
-        setQuestions([
-        ...questions,
-        {
-            id: Date.now() + Math.random(),
-            text: '',
-            type: 'multiple',
-            options: ['Option 1'],
-            required: false,
-        },
-        ]);
+      axios.patch(API_BASE_URL + 'form/',data).then((res) => {
+          console.log(res.data.data);
+          if (data['title']){
+            setFormTitle(value)
+          }
+          if (data['description']){
+            setFormDescription(value)
+          }
+      },[]).catch((err) => {
+        console.log(err);
+      },[])
+     
+  };
+    const addQuestion = (fid) => {
+        axios.post(API_BASE_URL + 'question/',{"form_id":fid}).then((res) => {
+            console.log(res.data.data);
+            setQuestions([
+              ...questions,res.data.data,
+              ]);
+        },[]).catch((err) => {
+          console.log(err);
+        },[])
+       
     };
 
     const removeQuestion = (qid) => {
-        setQuestions(questions.filter((q) => q.id !== qid));
+        axios.delete(API_BASE_URL + "question/", {
+          data : {
+            "question_uid":qid
+          }
+        }).then((res) => {
+          console.log(res.data)
+          if (res.data.status === true){
+            setQuestions(questions.filter((q) => q.uid !== qid));
+          }
+        }).catch((err) => {
+          console.log(err)
+        })
     };
 
     const updateQuestion = (qid, field, value) => {
@@ -78,17 +115,38 @@ function Form() {
         
     };
 
-    const updateOption = (qid, idx, value) => {
-        setQuestions(
-        questions.map((q) => {
-            if (q.id !== qid) return q;
-            const newOptions = [...q.options];
-            newOptions[idx] = value;
-            return { ...q, options: newOptions };
-        })
-        );
-    };
+    const updateOption = (cuid,qid,cid, idx, value) => {
+      axios.patch(API_BASE_URL + 'choice/',{choice_id:cid, choice:value}).then((res) => {
+        console.log(res.data);
+        console.log(res.data.data);
 
+          setQuestions(
+              questions.map((q) => {
+                  if (q.id !== qid) return q;
+                  const newOptions = [...q.choices];
+                  newOptions.map((c) => {
+                    if (c.id == cid){
+                      c.choice = value
+                    }
+                  })
+                  return { ...q, choices: newOptions };
+              })
+              );
+        
+        }).catch((err) => {
+          console.log(err);
+        })
+      };
+      
+    //   setQuestions(
+    //   questions.map((q) => {
+    //       if (q.id !== cid) return q;
+    //       const newOptions = [...q.choices];
+    //       newOptions[idx] = value;
+    //       return { ...q, choices: newOptions };
+    //   })
+    //   );
+    // }
     const addOption = ( fid, qid) => {
         axios.post(API_BASE_URL + `choice/`,{
             "form_id" : fid,
@@ -146,14 +204,14 @@ function Form() {
         {/* Form Header */}
         <div className="bg-white shadow-md rounded-xl p-6 border-t-8 border-blue-500 mb-4">
           <input
-            onChange={e => setFormTitle(e.target.value)}
+            onChange={e => EditForm(FormData.id, 'title',e.target.value)}
             type="text"
             value={formTitle}
             className="w-full text-3xl font-bold text-gray-800 border-none focus:outline-none mb-2"
             placeholder="Untitled Form"
           />
           <textarea
-            onChange={e => setFormDescription(e.target.value)}
+            onChange={e => EditForm(FormData.id, 'description',e.target.value)}
             className="w-full text-base text-gray-600 border-none focus:outline-none resize-none"
             placeholder="Form description"
             rows={2}
@@ -209,9 +267,17 @@ function Form() {
                       />
                       <input
                         type="text"
-                        value={opt.choice}
-                        onChange={e => updateOption(q.id, idx, e.target.value)}
+                        id = {opt.uid}
+                        value={`${opt.choice}`}
+                        placeholder={`Option ${idx + 1}`}
+                        onChange={(e) => (updateOption(opt.uid,q.id,opt.id, idx, e.target.value))}
                         className="border-b border-gray-300 focus:outline-none focus:border-blue-500 w-full"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Backspace' && opt.choice == '') {
+                            removeOption(opt.uid);
+                          }
+                        }}
+                      
                       />
                       {q.choices.length > 1 && (
                         <button type="button" onClick={() => removeOption(opt.uid, idx)} title="Remove option">
@@ -235,14 +301,14 @@ function Form() {
             </div>
             <div className="flex items-center justify-between mt-4 border-t pt-2 text-gray-600">
               <div className="flex gap-4">
-                <button type="button" title="Duplicate" onClick={addQuestion}>📄</button>
-                <button type="button" title="Delete" onClick={() => removeQuestion(q.id)} disabled={questions.length === 1}>🗑️</button>
+                {/* <button type="button" title="Duplicate" onClick={() => addQuestion()}>📄</button> */}
+                <button type="button" title="Delete" onClick={() => removeQuestion(q.uid)} disabled={questions.length === 1}>🗑️</button>
               </div>
               <label className="flex items-center gap-2">
                 Required
                 <input
                   type="checkbox"
-                  checked={q.required}
+                  checked={q.is_required}
                   onChange={e => updateQuestion(q.id, 'is_required', e.target.checked)}
                   className="accent-blue-600"
                 />
@@ -252,7 +318,7 @@ function Form() {
         ))}
         <button
           type="button"
-          onClick={addQuestion}
+          onClick={() => addQuestion(FormData.id)}
           className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
         >
           + Add Question
@@ -262,4 +328,4 @@ function Form() {
   );
 }
 
-export default Form
+export default FormEdit

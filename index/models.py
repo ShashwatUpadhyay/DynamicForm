@@ -25,7 +25,7 @@ class Choices(BaseModel):
 class Question(BaseModel):
     question = models.CharField(max_length=255)
     question_type = models.CharField(max_length=100, choices=QUSETION_TYPE_CHOICES)
-    is_required = models.BooleanField(default=False)
+    is_required = models.BooleanField(default=True)
     choices = models.ManyToManyField(Choices,blank=True, related_name="choices")  # For multiple choice or checkbox options
 
     def __str__(self):

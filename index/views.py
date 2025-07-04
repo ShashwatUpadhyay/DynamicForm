@@ -153,6 +153,31 @@ class QuestionAPI(APIView):
                 "message" : "Something went wrong!",
                 'data' : {}
             })
+    def delete(self , request):
+        data = request.data
+        uid = data.get('question_uid')
+        
+        if uid is not None:
+            try:
+                Question.objects.get(uid=uid).delete()
+                return Response({
+                    "status" : True,
+                    "message" : "Question Deleted Successfully!",
+                    "data" : data
+                })
+            except Exception as e:
+                print(e)
+                return Response({
+                "status" : False,
+                "message" : "Something went wrong!",
+                "data" : {}
+                })
+        else:
+            return Response({
+                "status" : False,
+                "message" : "Something went wrong!",
+                "data" : data
+            })
             
 class ChoiceAPI(APIView):
     
@@ -209,6 +234,7 @@ class ChoiceAPI(APIView):
                     "message" : "Invalid choice_id",
                     'data' : {}
                 })
+            choice = data.get('choice')
             serializer = ChoicesSerializer(choice_obj[0],data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()

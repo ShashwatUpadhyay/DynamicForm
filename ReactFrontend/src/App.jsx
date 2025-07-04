@@ -4,16 +4,17 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import './index.css'
-import Form from './components/form/from.jsx'
+import FormEdit from './components/form/fromEdit.jsx'
 import Home from './components/form/home.jsx'
+import Form from './components/form/form.jsx'
 
 function App() {
-  const [count, setCount] = useState(0)
 
   return (
     <>
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/form/:code/edit" element={<FormEdit />} />
         <Route path="/form/:code" element={<Form />} />
       </Routes>
     </>

@@ -15,7 +15,7 @@ function Home() {
             console.log(res.data.status);
             if (res.data.status == true){
                 console.log("success")
-                window.location.href = `/form/${res.data.data.code}`;
+                window.location.href = `/form/${res.data.data.code}/edit`;
             }
         })
         }catch(e){
@@ -52,7 +52,7 @@ function Home() {
           {FormList && FormList.length > 0 ? (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
     {FormList.map((form, index) => (
-        <a href={`/form/${form.code}`}>
+        <a href={`/form/${form.code}/edit`}>
             <div
                 key={index}
                 className="bg-white p-4 rounded-2xl shadow-md border hover:shadow-lg transition cursor-pointer"
