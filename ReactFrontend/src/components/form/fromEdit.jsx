@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useCallback, PureComponent } from 'react'
+import React, { useState, useEffect, useCallback, PureComponent,useRef  } from 'react'
 import { Link, useParams } from "react-router-dom";
 import { API_BASE_URL } from "/config";
 import debounce from 'lodash/debounce';
 import axios from 'axios';
-
+import { ColorPicker } from 'primereact/colorpicker';
+import FormHeader from './formHeader.jsx'
 
 const QUESTION_TYPES = [
   { value: 'multiple choice', label: 'Multiple choice' },
@@ -12,10 +13,14 @@ const QUESTION_TYPES = [
   { value: 'long answer', label: 'Long Answer' },
 ];
 
+
 function FormEdit() {
+    let timer;
     const { code } = useParams();
+    const timerRef = useRef(null);
+    const [isSaving , setIsSaving] = useState(false);
     const [FormData, setFormData] = useState([]);
-    const [formTitle, setFormTitle] = useState()
+    const [formTitle, setFormTitle] = useState();
     const [formDescription, setFormDescription] = useState('Form description');
     const [questions, setQuestions] = useState([]);
     // const [questions, setQuestions] = useState([
@@ -28,6 +33,7 @@ function FormEdit() {
     //     },
     // ]);
    const EditForm = (fid,field,value) => {
+      setIsSaving(true)
       var data = {};
       if (field === 'title'){
         data = {
@@ -39,20 +45,34 @@ function FormEdit() {
           "form_id":fid,
           "description" : value
         }
+      }else if(field == 'background_color'){
+        data = {
+          "form_id":fid,
+          "background_color" : '#'+value
+        }
       }
+      if (data['title']){
+        setFormTitle(value)
+      }
+      if (data['description']){
+        setFormDescription(value)
+      }if (data['background_color']){
+        setFormData((prev) => ({
+          ...prev,
+          background_color: data['background_color'],
+        }));
+      }
+      if (timerRef.current) clearTimeout(timerRef.current);
+
+      timerRef.current = setTimeout(() => {
 
       axios.patch(API_BASE_URL + 'form/',data).then((res) => {
           console.log(res.data.data);
-          if (data['title']){
-            setFormTitle(value)
-          }
-          if (data['description']){
-            setFormDescription(value)
-          }
+          setIsSaving(false)
       },[]).catch((err) => {
         console.log(err);
       },[])
-     
+    }, 1000);
   };
     const addQuestion = (fid) => {
         axios.post(API_BASE_URL + 'question/',{"form_id":fid}).then((res) => {
@@ -82,12 +102,15 @@ function FormEdit() {
     };
 
     const updateQuestion = (qid, field, value) => {
-        console.log(qid, field, value);
         setQuestions(
             questions.map((q) =>
                 q.id === qid ? { ...q, [field]: value } : q
             )
         );
+        setIsSaving(true);
+        if (timerRef.current) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+
         var data = {};
         if (field === 'question_type') {
             data = {
@@ -108,34 +131,42 @@ function FormEdit() {
         console.log(data)
         axios.patch(API_BASE_URL + 'question/',data).then((res) => {
             console.log(res.data);
+          setIsSaving(false);
             
         }).catch((err) => {
             console.log(err)
         })
-        
+      }, 1000)
     };
 
     const updateOption = (cuid,qid,cid, idx, value) => {
+      setIsSaving(true);
+      setQuestions(
+        questions.map((q) => {
+            if (q.id !== qid) return q;
+            const newOptions = [...q.choices];
+            newOptions.map((c) => {
+              if (c.id == cid){
+                c.choice = value
+              }
+            })
+            return { ...q, choices: newOptions };
+        })
+        );
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+
       axios.patch(API_BASE_URL + 'choice/',{choice_id:cid, choice:value}).then((res) => {
         console.log(res.data);
         console.log(res.data.data);
+      setIsSaving(false);
 
-          setQuestions(
-              questions.map((q) => {
-                  if (q.id !== qid) return q;
-                  const newOptions = [...q.choices];
-                  newOptions.map((c) => {
-                    if (c.id == cid){
-                      c.choice = value
-                    }
-                  })
-                  return { ...q, choices: newOptions };
-              })
-              );
+          
         
         }).catch((err) => {
           console.log(err);
         })
+      }, 1000);
       };
       
     //   setQuestions(
@@ -199,8 +230,11 @@ function FormEdit() {
     },[]);
 
   return (
+    <>
+    <FormHeader activeTab={'questions'} formisSaving={isSaving} />
     <div style={{ backgroundColor: FormData.background_color }} className='justify-center w-full-screen py-10'>
-      <div className="flex flex-col gap-6 w-full mx-auto max-w-2xl">
+      <div className="flex flex-col gap-6 w-full mx-auto max-w-2xl mt-10">
+
         {/* Form Header */}
         <div className="bg-white shadow-md rounded-xl p-6 border-t-8 border-blue-500 mb-4">
           <input
@@ -217,6 +251,9 @@ function FormEdit() {
             rows={2}
             value={formDescription}
           >{formDescription}</textarea>
+          <span>Backgroud Color: </span>
+          <ColorPicker format="hex" value={FormData.background_color} onChange={(e) => EditForm(FormData.id, 'background_color',e.value)} />
+
         </div>
         {/* Questions */}
         {questions.map((q, qIdx) => (
@@ -280,7 +317,7 @@ function FormEdit() {
                       
                       />
                       {q.choices.length > 1 && (
-                        <button type="button" onClick={() => removeOption(opt.uid, idx)} title="Remove option">
+                        <button type="button" onClick={() => removeOption(opt.uid)} title="Remove option">
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 50 50"><path d="M 7.71875 6.28125 L 6.28125 7.71875 L 23.5625 25 L 6.28125 42.28125 L 7.71875 43.71875 L 25 26.4375 L 42.28125 43.71875 L 43.71875 42.28125 L 26.4375 25 L 43.71875 7.71875 L 42.28125 6.28125 L 25 23.5625 Z"></path></svg>
                         </button>
                       )}
@@ -325,6 +362,7 @@ function FormEdit() {
         </button>
       </div>
     </div>
+    </>
   );
 }
 
