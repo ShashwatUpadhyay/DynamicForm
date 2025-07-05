@@ -232,7 +232,7 @@ function FormEdit() {
   return (
     <>
     <FormHeader activeTab={'questions'} formisSaving={isSaving} />
-    <div style={{ backgroundColor: FormData.background_color }} className='justify-center w-full-screen py-10'>
+    <div style={{ backgroundColor: FormData.background_color }} className='justify-center font-[Verdana] w-full-screen py-10'>
       <div className="flex flex-col gap-6 w-full mx-auto max-w-2xl mt-10">
 
         {/* Form Header */}
@@ -249,7 +249,6 @@ function FormEdit() {
             className="w-full text-base text-gray-600 border-none focus:outline-none resize-none"
             placeholder="Form description"
             rows={2}
-            value={formDescription}
           >{formDescription}</textarea>
           <span>Backgroud Color: </span>
           <ColorPicker format="hex" value={FormData.background_color} onChange={(e) => EditForm(FormData.id, 'background_color',e.value)} />

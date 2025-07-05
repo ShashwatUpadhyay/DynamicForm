@@ -56,7 +56,7 @@ function Form() {
   if (!form) return null;
 
   return (
-    <div style={{ backgroundColor: form.background_color || '#f3f4f6' }} className="min-h-screen py-10 flex justify-center">
+    <div style={{ backgroundColor: form.background_color || '#f3f4f6' }} className="min-h-screen font-[Verdana] py-10 flex justify-center">
       <div className="flex flex-col gap-6 w-full mx-auto max-w-2xl">
         {/* Form Header */}
         <div className="bg-white shadow-md rounded-xl p-6 border-t-8 border-blue-500 mb-4">

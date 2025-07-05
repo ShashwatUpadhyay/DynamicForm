@@ -102,11 +102,28 @@ class QuestionAPI(APIView):
             if serializer.is_valid():
                 serializer.save()
                 form = Form.objects.get(id = data['form_id'])
-                form.questions.add(Question.objects.get(id = serializer.data['id']))
+                choice = Choices.objects.create(choice = 'Option')
+                question = Question.objects.get(id = serializer.data['id'])
+                question.choices.add(choice)
+                form.questions.add(question)
+                choices = [{
+                            'id' : choice.id,
+                            "uid" : choice.uid,
+                            "choice" : choice.choice
+                            }]
+                print(question.choices.all())
                 return Response({
                     "status" : True,
                     "message" : "Question created successfully!",
-                    'data' : serializer.data
+                    # 'data' : serializer.data,
+                    "data" : {
+                        "choices" : choices,
+                        "id" : question.id,
+                        "is_required": question.is_required,
+                        "question" : question.question,
+                        "question_type" : question.question_type,
+                        "uid" : question.uid
+                    }
                 })
             else:
                 return Response({
@@ -132,6 +149,17 @@ class QuestionAPI(APIView):
                 })
             question_obj = Question.objects.filter(id = data.get('question_id')) 
             if question_obj.exists():
+                # qtype = data.get('question_type')
+                # if qtype == 'short answer' or qtype == 'long answer':
+                #     print("option should deleted")
+                #     choices_to_delete = question_obj[0].choices.all()
+                #     question_obj[0].choices.clear()
+                #     choices_to_delete.delete()
+                # elif(question_obj[0].choices.count() < 1):
+                #     choice = Choices.objects.create(choice = 'Option')
+                #     question_obj[0].choices.add(choice)
+                # chs = question_obj[0].choices.all()
+                # print(question_obj[0].choices)
                 serializer = QuestionSerializer(question_obj[0], data=data, partial=True)
                 if serializer.is_valid():
                     serializer.save()
@@ -184,8 +212,6 @@ class ChoiceAPI(APIView):
     def post(self , request):
         try:
             data  = request.data
-            print(data.get('form_id'))
-            print(data.get('question_id'))
             if not data.get('form_id') or not data.get('question_id'):
                 return Response({
                     "status":False,
