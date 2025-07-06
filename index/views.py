@@ -1,12 +1,49 @@
 from django.shortcuts import render
 from rest_framework.views import  APIView
 from rest_framework.response import  Response
-from .models import (Form,Question,Choices,Answers,User)
+from .models import (Form,Question,Choices,Answers,User,Responses)
 from .serializers import  FormSerializer, QuestionSerializer,AnswersSerializer,ChoicesSerializer,ResponseSerializer
-
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from utils.utility import generate_random_string
 # Create your views here.
 
 # GET,  POST, PUT, PATCH, DELETE
+
+class ResponsesViewSet(ModelViewSet):
+    queryset = Responses.objects.all()
+    serializer_class = ResponseSerializer
+    
+    @action(detail=False,methods=['post'])
+    def save_response(self, request):
+        data = request.data
+        responses = data.get('responses')
+        if not responses['form_id']:
+            print("fuck")
+            return Response({
+            "status" : False,
+            "message" : "form_id  is required...",
+            "data" : {},
+        })  
+        form_id = responses.pop('form_id')
+        form = Form.objects.get(code = form_id)
+        response = Responses.objects.create(
+            code = generate_random_string(15),
+            form = form
+        )
+        for q in responses:
+            question = Question.objects.get(id = q)
+            if question.question_type == 'checkbox':
+                answer = Answers.objects.create(question = question,answer=responses[q])
+            else:
+                answer = Answers.objects.create(question = question, answer = responses[q])
+            response.response.add(answer)
+        serializer = ResponseSerializer(data=responses)
+        return Response({
+            "status" : True,
+            "message" : "Response Captured..",
+            "data" : serializer.data,
+        })    
 
 class FormsAPI(APIView):
     def get(self, request):
@@ -301,3 +338,4 @@ class ChoiceAPI(APIView):
                 "message" : "Something went wrong!",
                 "data" : {}
             })
+

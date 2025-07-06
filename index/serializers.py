@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import (
-    Form,Question,Answers,Choices,Response,User
+    Form,Question,Answers,Choices,User,Responses
 )
 
 class ChoicesSerializer(serializers.ModelSerializer):
@@ -44,7 +44,7 @@ class AnswersSerializer(serializers.ModelSerializer):
 
 class ResponseSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Response
+        model = Responses
         exclude = ['created_at','updated_at']
 
 class UserSerializer(serializers.ModelSerializer):

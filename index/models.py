@@ -61,7 +61,7 @@ class Answers(BaseModel):
     def __str__(self):
         return self.answer
 
-class Response(BaseModel):
+class Responses(BaseModel):
     code = models.CharField(max_length=100, unique=True)  
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='responses')
     responder_ip = models.GenericIPAddressField(blank=True, null=True)  # Store IP address of the responder
@@ -69,4 +69,4 @@ class Response(BaseModel):
     response = models.ManyToManyField(Answers,  related_name="answers")  # Store answers as a JSON object
     
     def __str__(self):
-        return self.responder_email 
+        return self.code 

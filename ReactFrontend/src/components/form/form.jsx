@@ -17,6 +17,10 @@ function Form() {
       .then(res => {
         setForm(res.data.data);
         setLoading(false);
+        setResponses(prev => ({
+          ...prev,
+          form_id: res.data.data.code
+        }));
       })
       .catch(err => {
         setError('Failed to load form.');
@@ -42,7 +46,8 @@ function Form() {
   const handleSubmit = (e) => {
     e.preventDefault();
     setSubmitStatus(null);
-    axios.post(`${API_BASE_URL}form/${code}/submit/`, { responses })
+    console.log(responses)
+    axios.post(`${API_BASE_URL}response/save_response/`, { responses })
       .then(res => {
         setSubmitStatus('success');
       })

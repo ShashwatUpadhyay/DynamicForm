@@ -21,7 +21,7 @@ function FormEdit() {
     const [isSaving , setIsSaving] = useState(false);
     const [FormData, setFormData] = useState([]);
     const [formTitle, setFormTitle] = useState();
-    const [formDescription, setFormDescription] = useState('Form description');
+    const [formDescription, setFormDescription] = useState();
     const [questions, setQuestions] = useState([]);
     // const [questions, setQuestions] = useState([
     //     {
@@ -40,38 +40,32 @@ function FormEdit() {
           "form_id":fid,
           "title" : value
         }
+        setFormTitle(value);
       }else if(field === 'description'){
         data = {
           "form_id":fid,
           "description" : value
         }
+        setFormDescription(value);
       }else if(field == 'background_color'){
         data = {
           "form_id":fid,
           "background_color" : '#'+value
         }
-      }
-      if (data['title']){
-        setFormTitle(value)
-      }
-      if (data['description']){
-        setFormDescription(value)
-      }if (data['background_color']){
         setFormData((prev) => ({
           ...prev,
           background_color: data['background_color'],
         }));
       }
+
       if (timerRef.current) clearTimeout(timerRef.current);
-
-      timerRef.current = setTimeout(() => {
-
-      axios.patch(API_BASE_URL + 'form/',data).then((res) => {
-          console.log(res.data.data);
-          setIsSaving(false)
-      },[]).catch((err) => {
-        console.log(err);
-      },[])
+        timerRef.current = setTimeout(() => {
+        axios.patch(API_BASE_URL + 'form/',data).then((res) => {
+            console.log(res.data.data);
+            setIsSaving(false)
+        },[]).catch((err) => {
+          console.log(err);
+        },[])
     }, 1000);
   };
     const addQuestion = (fid) => {
@@ -248,8 +242,9 @@ function FormEdit() {
             onChange={e => EditForm(FormData.id, 'description',e.target.value)}
             className="w-full text-base text-gray-600 border-none focus:outline-none resize-none"
             placeholder="Form description"
+            value={formDescription}
             rows={2}
-          >{formDescription}</textarea>
+          ></textarea>
           <span>Backgroud Color: </span>
           <ColorPicker format="hex" value={FormData.background_color} onChange={(e) => EditForm(FormData.id, 'background_color',e.value)} />
 
