@@ -38,11 +38,11 @@ class ResponsesViewSet(ModelViewSet):
             else:
                 answer = Answers.objects.create(question = question, answer = responses[q])
             response.response.add(answer)
-        serializer = ResponseSerializer(data=responses)
+        # serializer = ResponseSerializer(data=responses)
         return Response({
             "status" : True,
             "message" : "Response Captured..",
-            "data" : serializer.data,
+            "data" : {},
         })    
 
 class FormsAPI(APIView):

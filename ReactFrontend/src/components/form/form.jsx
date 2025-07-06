@@ -49,7 +49,12 @@ function Form() {
     console.log(responses)
     axios.post(`${API_BASE_URL}response/save_response/`, { responses })
       .then(res => {
-        setSubmitStatus('success');
+        console.log(res)
+        if (res.data.status === true){
+          setSubmitStatus('success');
+          window.location.href = `/`;
+          
+        }
       })
       .catch(err => {
         setSubmitStatus('error');
@@ -138,6 +143,9 @@ function Form() {
           ) : (
             <div className="text-gray-500">No questions in this form.</div>
           )}
+            {submitStatus === 'success' && (
+              <div className="text-green-500 mt-2">Form submitted sucessfully.</div>
+            )}
           <button
             type="submit"
             className="mt-2 px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
