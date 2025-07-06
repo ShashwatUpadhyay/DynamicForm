@@ -48,7 +48,6 @@ class ResponsesViewSet(ModelViewSet):
 class FormsAPI(APIView):
     def get(self, request):
         forms = Form.objects.all().order_by('-created_at')
-        print(forms)
         serializer = FormSerializer(forms,many=True)
         return Response({
             "status" : "success",
