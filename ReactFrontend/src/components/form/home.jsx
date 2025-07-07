@@ -2,11 +2,36 @@ import React , {useEffect , useState} from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from "/config";
+import Swal from 'sweetalert2'
 
 function Home() {
     const [FormList , setFormList] = useState([]);
 
   const navigate = useNavigate();
+
+  const  deleteForm = (code) => {
+      Swal.fire({
+        title: "Do you want delete the form?",
+        showCancelButton: true,
+        confirmButtonText: "Yes"
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          Swal.fire("Saved!", "", "success");
+          console.log("confiremed");
+          axios.delete(`${API_BASE_URL}form/?code=${code}`).then((res) => {
+              if (res.data.status === true){
+                Swal.fire(res.data.message, "", "success");
+                setFormList(prev => prev.filter(f => f.code !== code));
+              }
+          })
+        } else{
+          Swal.fire(res.data.message, "", "info");
+          console.log("cancel");
+        }
+      });
+  };
+
 
   const handleNewForm = () => {
     try {
@@ -24,6 +49,7 @@ function Home() {
 
   };
 
+ 
 
   useEffect(() => {
     try {
@@ -52,17 +78,18 @@ function Home() {
           {FormList && FormList.length > 0 ? (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
     {FormList.map((form, index) => (
-        <a href={`/form/${form.code}/edit`}>
-            <div
+      <div
                 key={index}
                 className="bg-white p-4 rounded-2xl shadow-md border hover:shadow-lg transition cursor-pointer"
             >
+            <a href={`/form/${form.code}/edit`}>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2 truncate">
                 {form.title || "Untitled Form"}
                 </h3>
                 <p className="text-sm text-gray-500">Last edited: {new Date(form.updated_at).toLocaleString()}</p>
-            </div>
             </a>
+            <button onClick={() => {deleteForm(form.code)}} className="btn text-sm text-red-500">delete</button>
+            </div>
             ))}
         </div>
         ) : (

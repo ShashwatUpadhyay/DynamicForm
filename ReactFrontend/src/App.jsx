@@ -7,6 +7,7 @@ import './index.css'
 import FormEdit from './components/form/fromEdit.jsx'
 import Home from './components/form/home.jsx'
 import Form from './components/form/form.jsx'
+import FormResponse from './components/form/formResponse.jsx';
 
 function App() {
 
@@ -16,6 +17,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/form/:code/edit" element={<FormEdit />} />
         <Route path="/form/:code" element={<Form />} />
+        <Route path="/form/:code/response" element={<FormResponse />} />
       </Routes>
     </>
   )

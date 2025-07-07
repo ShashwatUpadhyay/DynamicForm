@@ -6,6 +6,9 @@ from .serializers import  FormSerializer, QuestionSerializer,AnswersSerializer,C
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from utils.utility import generate_random_string
+import ast
+from collections import defaultdict
+
 # Create your views here.
 
 # GET,  POST, PUT, PATCH, DELETE
@@ -19,7 +22,6 @@ class ResponsesViewSet(ModelViewSet):
         data = request.data
         responses = data.get('responses')
         if not responses['form_id']:
-            print("fuck")
             return Response({
             "status" : False,
             "message" : "form_id  is required...",
@@ -39,11 +41,67 @@ class ResponsesViewSet(ModelViewSet):
                 answer = Answers.objects.create(question = question, answer = responses[q])
             response.response.add(answer)
         # serializer = ResponseSerializer(data=responses)
+        
         return Response({
             "status" : True,
             "message" : "Response Captured..",
             "data" : {},
         })    
+        
+    @action(detail=False, methods=['get'])
+    def get_response(self, request):
+        code = request.GET.get('code')
+        form = Form.objects.get(code=code)
+        responses = Responses.objects.filter(form=form)
+        questions = form.questions.all()
+        
+        answers = []
+
+        for question in questions:
+            temp = {
+                'id': question.id,
+                'question': question.question,
+                'type': question.question_type,
+            }
+            if question.question_type == 'checkbox':
+                temp['chartType'] = 'pie'
+            elif question.question_type == 'multiple choice':
+                temp['chartType'] = 'bar'   
+            else:
+                temp['chartType'] = ''   
+                
+            # Collect all possible options in an ordered list
+            option_counter = defaultdict(int)
+            for ans in question.answers.all():
+                if question.question_type == 'checkbox':
+                    try:
+                        selected = ast.literal_eval(ans.answer)
+                        for option in selected:
+                            option_counter[option] += 1
+                    except Exception as e:
+                        continue
+                else:
+                    option_counter[ans.answer] += 1
+
+            options = list(option_counter.keys())
+            responses_count = [option_counter[o] for o in options]
+
+            temp['options'] = options
+            temp['responses'] = responses_count
+
+            answers.append(temp)
+
+        data = {
+            "total_responses": responses.count(),
+            "questions": answers
+        }
+
+        return Response({
+            "status": True,
+            "message": "Response Fetched!!",
+            "data": data
+        })
+        
 
 class FormsAPI(APIView):
     def get(self, request):
@@ -124,7 +182,25 @@ class FormAPI(APIView):
                     "message" : "Something went wrong!",
                     "data" : {}
                 })
-                      
+            
+    def delete(self, request):
+        form_id = request.GET.get('code')
+        try:
+            form = Form.objects.get(code=form_id)
+            form.delete()
+            return Response({
+                        "status" : True,
+                        "message" : "Form deleted sucessfully",
+                        "data" : form_id
+                    })   
+        except Exception as e:
+            print(e)
+            return Response({ 
+                        "status" : False,
+                        "message" : "Something went wrong!",
+                        "data" : {}
+                    }) 
+             
 class QuestionAPI(APIView):
     
     def post(self,request):

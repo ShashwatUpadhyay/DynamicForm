@@ -225,7 +225,7 @@ function FormEdit() {
 
   return (
     <>
-    <FormHeader activeTab={'questions'} formisSaving={isSaving} />
+    <FormHeader activeTab={'questions'} formisSaving={isSaving} code={code} />
     <div style={{ backgroundColor: FormData.background_color }} className='justify-center font-[Verdana] w-full-screen py-10'>
       <div className="flex flex-col gap-6 w-full mx-auto max-w-2xl mt-10">
 
