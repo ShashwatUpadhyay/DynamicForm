@@ -2,12 +2,17 @@ from django.db import models
 from .choices import QUSETION_TYPE_CHOICES
 from django.contrib.auth.models import AbstractUser, User
 from utils.utility import generate_random_string
+import uuid
+from django.db.models.signals import post_save
+from django.dispatch.dispatcher import receiver
+from utils.sheet import create_sheet
 # Create your models here.
 
 class User(AbstractUser, models.Model):
     email = models.EmailField(unique=True)
 
 class BaseModel(models.Model):
+    uid = models.CharField(max_length=100, default=uuid.uuid4, unique=True )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -23,7 +28,7 @@ class Choices(BaseModel):
 class Question(BaseModel):
     question = models.CharField(max_length=255)
     question_type = models.CharField(max_length=100, choices=QUSETION_TYPE_CHOICES)
-    is_required = models.BooleanField(default=False)
+    is_required = models.BooleanField(default=True)
     choices = models.ManyToManyField(Choices,blank=True, related_name="choices")  # For multiple choice or checkbox options
 
     def __str__(self):
@@ -59,12 +64,27 @@ class Answers(BaseModel):
     def __str__(self):
         return self.answer
 
-class Response(BaseModel):
+class Responses(BaseModel):
     code = models.CharField(max_length=100, unique=True)  
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='responses')
     responder_ip = models.GenericIPAddressField(blank=True, null=True)  # Store IP address of the responder
     responder_email = models.EmailField(blank=True, null=True)  # Store email if collect_email is True
     response = models.ManyToManyField(Answers,  related_name="answers")  # Store answers as a JSON object
+    sheet_id = models.CharField(max_length=100, null=True, blank=True) 
+    sheet_url = models.CharField(max_length=100, null=True, blank=True) 
     
     def __str__(self):
-        return self.responder_email 
+        return self.code 
+
+    class Meta:
+        get_latest_by = 'created_at'
+        
+@receiver(post_save ,sender=Responses)
+def responses_created(sender, instance, created, **kwargs):
+    if created:
+        email = 'imakemyownluck619@gmail.com'
+        id , url = create_sheet(instance , email)
+        instance.sheet_id = id
+        instance.sheet_url = url
+        instance.save()
+        print("spread sheet created and acces given")

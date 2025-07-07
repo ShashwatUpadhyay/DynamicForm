@@ -1,20 +1,137 @@
 from django.shortcuts import render
 from rest_framework.views import  APIView
 from rest_framework.response import  Response
-from .models import (Form,Question,Choices,Answers,User)
+from .models import (Form,Question,Choices,Answers,User,Responses)
 from .serializers import  FormSerializer, QuestionSerializer,AnswersSerializer,ChoicesSerializer,ResponseSerializer
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from utils.utility import generate_random_string
+import ast
+from collections import defaultdict
+from django.utils import timezone
+
 # Create your views here.
 
 # GET,  POST, PUT, PATCH, DELETE
 
-class FormAPI(APIView):
+class ResponsesViewSet(ModelViewSet):
+    queryset = Responses.objects.all()
+    serializer_class = ResponseSerializer
     
-    def get(self, request):
+    @action(detail=False,methods=['post'])
+    def save_response(self, request):
+        data = request.data
+        responses = data.get('responses')
+        if not responses['form_id']:
+            return Response({
+            "status" : False,
+            "message" : "form_id  is required...",
+            "data" : {},
+        })  
+        form_id = responses.pop('form_id')
+        form = Form.objects.get(code = form_id)
+        response = Responses.objects.create(
+            code = generate_random_string(15),
+            form = form
+        )
+        for q in responses:
+            question = Question.objects.get(id = q)
+            if question.question_type == 'checkbox':
+                answer = Answers.objects.create(question = question,answer=responses[q])
+            else:
+                answer = Answers.objects.create(question = question, answer = responses[q])
+            response.response.add(answer)
+        # serializer = ResponseSerializer(data=responses)
+        
         return Response({
-            "status" : "success",
-            "message" : "Got get request"
+            "status" : True,
+            "message" : "Response Captured..",
+            "data" : {},
+        })    
+        
+    @action(detail=False, methods=['get'])
+    def get_response(self, request):
+        code = request.GET.get('code')
+        form = Form.objects.get(code=code)
+        responses = Responses.objects.filter(form=form)
+        last_response = responses.latest().created_at
+        today_responses = responses.filter(created_at__date=timezone.now().date()).count()
+        questions = form.questions.all()
+        answers = []
+
+        for question in questions:
+            temp = {
+                'id': question.id,
+                'question': question.question,
+                'type': question.question_type,
+            }
+            if question.question_type == 'checkbox':
+                temp['chartType'] = 'pie'
+            elif question.question_type == 'multiple choice':
+                temp['chartType'] = 'bar'   
+            else:
+                temp['chartType'] = ''   
+                
+            # Collect all possible options in an ordered list
+            option_counter = defaultdict(int)
+            submitted_answers = []
+            for ans in question.answers.all():
+                if question.question_type == 'checkbox':
+                    try:
+                        selected = ast.literal_eval(ans.answer)
+                        for option in selected:
+                            option_counter[option] += 1
+                    except Exception as e:
+                        continue
+                elif question.question_type == 'long answer' or question.question_type == 'short answer':
+                    submitted_answers.append(ans.answer)
+                else:
+                    option_counter[ans.answer] += 1
+
+            options = list(option_counter.keys())
+            responses_count = [option_counter[o] for o in options]
+
+            temp['options'] = options
+            temp['responses'] = responses_count
+            temp['answers'] = submitted_answers
+
+            answers.append(temp)
+        print(today_responses)
+        data = {
+            "total_responses": responses.count(),
+            "lastResponse": last_response,
+            "today_responses": today_responses,
+            "questions": answers
+        }
+
+        return Response({
+            "status": True,
+            "message": "Response Fetched!!",
+            "data": data
         })
         
+
+class FormsAPI(APIView):
+    def get(self, request):
+        forms = Form.objects.all().order_by('-created_at')
+        serializer = FormSerializer(forms,many=True)
+        return Response({
+            "status" : "success",
+            "message" : "Got get request",
+            "data" : serializer.data
+        })
+        
+class FormAPI(APIView):
+    def get(self, request):
+        code = request.GET.get('code')
+        form = Form.objects.get(code=code)
+        serializer = FormSerializer(form)
+        return Response({
+            "status" : "success",
+            "message" : "Form fetched sucessfully!",
+            "data" : serializer.data
+        })
+ 
     def post(self, request):
         try:
             # data = request.data 
@@ -74,7 +191,24 @@ class FormAPI(APIView):
                     "data" : {}
                 })
             
-            
+    def delete(self, request):
+        form_id = request.GET.get('code')
+        try:
+            form = Form.objects.get(code=form_id)
+            form.delete()
+            return Response({
+                        "status" : True,
+                        "message" : "Form deleted sucessfully",
+                        "data" : form_id
+                    })   
+        except Exception as e:
+            print(e)
+            return Response({ 
+                        "status" : False,
+                        "message" : "Something went wrong!",
+                        "data" : {}
+                    }) 
+             
 class QuestionAPI(APIView):
     
     def post(self,request):
@@ -88,11 +222,28 @@ class QuestionAPI(APIView):
             if serializer.is_valid():
                 serializer.save()
                 form = Form.objects.get(id = data['form_id'])
-                form.questions.add(Question.objects.get(id = serializer.data['id']))
+                choice = Choices.objects.create(choice = 'Option')
+                question = Question.objects.get(id = serializer.data['id'])
+                question.choices.add(choice)
+                form.questions.add(question)
+                choices = [{
+                            'id' : choice.id,
+                            "uid" : choice.uid,
+                            "choice" : choice.choice
+                            }]
+                print(question.choices.all())
                 return Response({
                     "status" : True,
                     "message" : "Question created successfully!",
-                    'data' : serializer.data
+                    # 'data' : serializer.data,
+                    "data" : {
+                        "choices" : choices,
+                        "id" : question.id,
+                        "is_required": question.is_required,
+                        "question" : question.question,
+                        "question_type" : question.question_type,
+                        "uid" : question.uid
+                    }
                 })
             else:
                 return Response({
@@ -118,6 +269,17 @@ class QuestionAPI(APIView):
                 })
             question_obj = Question.objects.filter(id = data.get('question_id')) 
             if question_obj.exists():
+                # qtype = data.get('question_type')
+                # if qtype == 'short answer' or qtype == 'long answer':
+                #     print("option should deleted")
+                #     choices_to_delete = question_obj[0].choices.all()
+                #     question_obj[0].choices.clear()
+                #     choices_to_delete.delete()
+                # elif(question_obj[0].choices.count() < 1):
+                #     choice = Choices.objects.create(choice = 'Option')
+                #     question_obj[0].choices.add(choice)
+                # chs = question_obj[0].choices.all()
+                # print(question_obj[0].choices)
                 serializer = QuestionSerializer(question_obj[0], data=data, partial=True)
                 if serializer.is_valid():
                     serializer.save()
@@ -138,6 +300,31 @@ class QuestionAPI(APIView):
                 "status" : False,
                 "message" : "Something went wrong!",
                 'data' : {}
+            })
+    def delete(self , request):
+        data = request.data
+        uid = data.get('question_uid')
+        
+        if uid is not None:
+            try:
+                Question.objects.get(uid=uid).delete()
+                return Response({
+                    "status" : True,
+                    "message" : "Question Deleted Successfully!",
+                    "data" : data
+                })
+            except Exception as e:
+                print(e)
+                return Response({
+                "status" : False,
+                "message" : "Something went wrong!",
+                "data" : {}
+                })
+        else:
+            return Response({
+                "status" : False,
+                "message" : "Something went wrong!",
+                "data" : data
             })
             
 class ChoiceAPI(APIView):
@@ -193,6 +380,7 @@ class ChoiceAPI(APIView):
                     "message" : "Invalid choice_id",
                     'data' : {}
                 })
+            choice = data.get('choice')
             serializer = ChoicesSerializer(choice_obj[0],data=data, partial=True)
             if serializer.is_valid():
                 serializer.save()
@@ -214,3 +402,23 @@ class ChoiceAPI(APIView):
                 "message" : "Something went wrong!",
                 'data' : {}
             })
+    def delete(self, request):
+        data = request.data
+        uid = data.get('option_uid')
+        print(data)
+        try:
+            choice = Choices.objects.get(uid=uid)
+            choice.delete()
+            return Response({
+                'status' : True,
+                "message" : "Option deleted sucessfully",
+                "data" : {}
+            })
+        except Exception as e:
+            print(e)
+            return Response({
+                'status' : False,
+                "message" : "Something went wrong!",
+                "data" : {}
+            })
+
