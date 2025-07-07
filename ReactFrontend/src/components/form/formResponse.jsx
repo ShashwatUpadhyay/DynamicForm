@@ -61,6 +61,7 @@ const chartColors = [
 function FormResponse() {
     const { code } = useParams();
     const [responseCount, setResponseCount] = useState();
+
     const [lastResponse, setLastResponse] = useState();
     const [todayResponses, setTodayResponses] = useState();
     const [questions, setQuestions] = useState([]);
@@ -75,7 +76,6 @@ function FormResponse() {
         return `${day}-${month}-${year} - ${hours}:${minutes}`;
       }
       
-
     useEffect(() => {
         try {
             axios.get(`${API_BASE_URL}response/get_response?code=${code}`)
@@ -100,6 +100,7 @@ function FormResponse() {
         <div className="max-w-2xl mx-auto flex flex-col gap-6 mt-[80px]">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 ">
+
             <div className="bg-white rounded-xl shadow p-4 border-t-8 border-blue-500 flex flex-col items-center">
               <span className="text-2xl font-bold text-blue-600">{responseCount}</span>
               <span className="text-gray-600 text-sm">Total Responses</span>
@@ -118,6 +119,7 @@ function FormResponse() {
                 Export CSV
             </button>
           </div>
+
           {/* Questions & Graphs */}
           <div className="flex flex-col gap-8">
             {questions.map((q, idx) => (
