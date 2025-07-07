@@ -2,13 +2,13 @@ import gspread
 from google.oauth2.service_account import Credentials
 import json
 
-# sheet_id = '1CBgocr8X_kbD-NEvvOm2h_K2um3xTJqpIvZMqf8kuYQ'
-# workbook = client.open_by_key(sheet_id)
 
 scopes = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/drive']
 
-with open('credentials.json') as f:
+with open('utils/credentials.json') as f:
     service_account_info = json.load(f)
+
+
 
 
 creds = Credentials.from_service_account_info(service_account_info, scopes=scopes)
