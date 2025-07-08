@@ -10,6 +10,7 @@ function Form() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitStatus, setSubmitStatus] = useState(null);
+  const token = sessionStorage.getItem("authToken");
 
   useEffect(() => {
     setLoading(true);
@@ -47,7 +48,13 @@ function Form() {
     e.preventDefault();
     setSubmitStatus(null);
     console.log(responses)
-    axios.post(`${API_BASE_URL}response/save_response/`, { responses })
+    axios.post(`${API_BASE_URL}response/save_response/`, { responses },
+      { 
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }    
+    )
       .then(res => {
         console.log(res)
         if (res.data.status === true){

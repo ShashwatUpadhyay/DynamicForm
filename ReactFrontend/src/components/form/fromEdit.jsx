@@ -23,6 +23,8 @@ function FormEdit() {
     const [formTitle, setFormTitle] = useState();
     const [formDescription, setFormDescription] = useState();
     const [questions, setQuestions] = useState([]);
+    const token = sessionStorage.getItem("authToken");
+
     // const [questions, setQuestions] = useState([
     //     {
     //     id: Date.now(),

@@ -42,6 +42,8 @@ class Form(BaseModel):
     background_color = models.CharField(max_length=10, default='#FFFFFF')  # Hex color code
     collect_email = models.BooleanField(default=False)
     questions = models.ManyToManyField(Question, related_name='forms', blank=True)
+    sheet_id = models.CharField(max_length=100, null=True, blank=True) 
+    sheet_url = models.CharField(max_length=100, null=True, blank=True) 
     
     @staticmethod
     def create_blank_form(user):
@@ -70,8 +72,7 @@ class Responses(BaseModel):
     responder_ip = models.GenericIPAddressField(blank=True, null=True)  # Store IP address of the responder
     responder_email = models.EmailField(blank=True, null=True)  # Store email if collect_email is True
     response = models.ManyToManyField(Answers,  related_name="answers")  # Store answers as a JSON object
-    sheet_id = models.CharField(max_length=100, null=True, blank=True) 
-    sheet_url = models.CharField(max_length=100, null=True, blank=True) 
+    
     
     def __str__(self):
         return self.code 
@@ -79,12 +80,13 @@ class Responses(BaseModel):
     class Meta:
         get_latest_by = 'created_at'
         
-@receiver(post_save ,sender=Responses)
+@receiver(post_save ,sender=Form)
 def responses_created(sender, instance, created, **kwargs):
-    if created:
-        email = 'imakemyownluck619@gmail.com'
-        id , url = create_sheet(instance , email)
-        instance.sheet_id = id
-        instance.sheet_url = url
-        instance.save()
-        print("spread sheet created and acces given")
+    pass
+    # if created:
+    #     email = 'imakemyownluck619@gmail.com'
+    #     id , url = create_sheet(instance , email)
+    #     instance.sheet_id = id
+    #     instance.sheet_url = url
+    #     instance.save()
+    #     print("spread sheet created and acces given")

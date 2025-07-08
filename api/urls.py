@@ -8,6 +8,7 @@ router.register('response', ResponsesViewSet, basename='response')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('account/', include('api.auth_urls')),
     path('forms/', FormsAPI.as_view()),
     path('form/', FormAPI.as_view()),
     path('question/', QuestionAPI.as_view()),

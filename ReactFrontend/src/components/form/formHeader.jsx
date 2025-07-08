@@ -7,11 +7,14 @@ function FormHeader({ activeTab, onTabChange, formisSaving, code }) {
       <div className="w-full flex items-center fixed z-[1000]  justify-between px-6 py-3 bg-purple-600 shadow text-white">
         <div className="flex items-center  gap-3">
           {/* Google Forms-like icon */}
-          <div className="bg-white rounded-md p-2 flex items-center justify-center">
+          <a href="/form" className='flex'>
+          <div className="bg-white rounded-md p-2 flex items-center justify-center mx-2 py-auto text-center justify-center">
             <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="6" fill="#8E24AA"/><rect x="7" y="7" width="18" height="18" rx="2" fill="white"/><rect x="10" y="10" width="12" height="2" rx="1" fill="#8E24AA"/><rect x="10" y="14" width="8" height="2" rx="1" fill="#8E24AA"/><rect x="10" y="18" width="6" height="2" rx="1" fill="#8E24AA"/></svg>
           </div>
-          <span className="text-2xl font-bold tracking-tight">Form Builder</span>
+          <span className="text-2xl font-bold tracking-tight py-auto my-auto text-center justify-center">Forms</span>
+          </a>
         </div>
+
         {activeTab === 'questions' ? (
           <>
           {formisSaving && <p>Saving form...</p>}

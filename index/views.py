@@ -5,10 +5,14 @@ from .models import (Form,Question,Choices,Answers,User,Responses)
 from .serializers import  FormSerializer, QuestionSerializer,AnswersSerializer,ChoicesSerializer,ResponseSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
-from utils.utility import generate_random_string
+from utils.utility import generate_random_string, convert_to_local_time_zone
 import ast
 from collections import defaultdict
 from django.utils import timezone
+import time
+from utils.sheet import create_sheet
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 
 # Create your views here.
 
@@ -55,10 +59,19 @@ class ResponsesViewSet(ModelViewSet):
         form = Form.objects.get(code=code)
         responses = Responses.objects.filter(form=form)
         last_response = responses.latest().created_at
-        today_responses = responses.filter(created_at__date=timezone.now().date()).count()
+        today_start , tomorrow_start = convert_to_local_time_zone()
+        today_responses = responses.filter(created_at__gte=today_start,
+                                            created_at__lt=tomorrow_start
+                                        ).count()
         questions = form.questions.all()
+        sheet_id, sheet_url = form.sheet_id ,form.sheet_url
+        print(sheet_id, sheet_url)
+        has_sheet = True
+        sheet_url = form.sheet_url
+        if sheet_url is None:
+            has_sheet = False
+            
         answers = []
-
         for question in questions:
             temp = {
                 'id': question.id,
@@ -96,11 +109,12 @@ class ResponsesViewSet(ModelViewSet):
             temp['answers'] = submitted_answers
 
             answers.append(temp)
-        print(today_responses)
         data = {
             "total_responses": responses.count(),
             "lastResponse": last_response,
             "today_responses": today_responses,
+            "has_sheet": has_sheet,
+            "sheet_url": sheet_url,
             "questions": answers
         }
 
@@ -109,11 +123,38 @@ class ResponsesViewSet(ModelViewSet):
             "message": "Response Fetched!!",
             "data": data
         })
-        
+    
+    @action(detail=False, methods=['get'])
+    def create_sheet(self, request):
+        code = request.GET.get('code')
+        data={}
+        try:
+            form = Form.objects.get(code=code)
+            email = 'infernalknight96@gmail.com'
+            id, url = create_sheet(form, email)
+            data = {
+                'sheet_id':id,
+                'sheet_url':url,
+                'sheet_created':True
+            }
+        except Exception as e:
+            print(e)
+            return Response({
+                "status": False,
+                "message": "Something went wrong!",
+                "data": {}
+            })
+        return Response({
+            "status": True,
+            "message": "Response Fetched!!",
+            "data": data
+        })
 
 class FormsAPI(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        forms = Form.objects.all().order_by('-created_at')
+        forms = Form.objects.filter(creator = request.user).order_by('-created_at')
         serializer = FormSerializer(forms,many=True)
         return Response({
             "status" : "success",
@@ -269,17 +310,6 @@ class QuestionAPI(APIView):
                 })
             question_obj = Question.objects.filter(id = data.get('question_id')) 
             if question_obj.exists():
-                # qtype = data.get('question_type')
-                # if qtype == 'short answer' or qtype == 'long answer':
-                #     print("option should deleted")
-                #     choices_to_delete = question_obj[0].choices.all()
-                #     question_obj[0].choices.clear()
-                #     choices_to_delete.delete()
-                # elif(question_obj[0].choices.count() < 1):
-                #     choice = Choices.objects.create(choice = 'Option')
-                #     question_obj[0].choices.add(choice)
-                # chs = question_obj[0].choices.all()
-                # print(question_obj[0].choices)
                 serializer = QuestionSerializer(question_obj[0], data=data, partial=True)
                 if serializer.is_valid():
                     serializer.save()

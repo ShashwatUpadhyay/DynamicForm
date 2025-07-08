@@ -6,6 +6,8 @@ import Swal from 'sweetalert2'
 
 function Home() {
     const [FormList , setFormList] = useState([]);
+    const token = sessionStorage.getItem("authToken");
+
 
   const navigate = useNavigate();
 
@@ -35,7 +37,12 @@ function Home() {
 
   const handleNewForm = () => {
     try {
-        axios.post(API_BASE_URL + "form/").then((res) => {
+        axios.post(API_BASE_URL + "form/",{},{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        }    
+      ).then((res) => {
             console.log(res.data.data.code);
             console.log(res.data.status);
             if (res.data.status == true){
@@ -53,7 +60,12 @@ function Home() {
 
   useEffect(() => {
     try {
-      axios.get(API_BASE_URL + "forms/" ).then((res) => {
+      axios.get(API_BASE_URL + "forms/",{ 
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      }    
+     ).then((res) => {
         setFormList(res.data.data);
       },[]);
         } catch (error) {
@@ -63,18 +75,19 @@ function Home() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="w-full max-w-2xl mt-20">
-        <h1 className="text-4xl font-bold text-center mb-8 text-blue-600">Google Forms Clone</h1>
-        <div className="flex justify-center mb-8">
+      <div className="w-full max-w-2xl">
+        <div className='space-between'>
+        <span className="text-4xl font-bold text-center mb-8 text-blue-600">My Forms</span>
           <button
             onClick={handleNewForm}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg shadow hover:bg-blue-700 transition float-end"
           >
             + New Form
           </button>
+          </div>
+        <div className="flex justify-center mb-8">
         </div>
         <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-2xl font-semibold mb-4">Your Forms</h2>
           {FormList && FormList.length > 0 ? (
   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
     {FormList.map((form, index) => (

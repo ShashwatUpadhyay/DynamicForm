@@ -16,11 +16,11 @@ gc = gspread.authorize(creds)
 
 
 def create_sheet(instance , email):
-    sh = gc.create(f"{instance.form.title} response.")
-    sh.share(email, perm_type='user', role='writer',notify=True, with_link=True)
+    sh = gc.create(f"{instance.title} response.")
+    sh.share(email, perm_type='anyone', role='writer',notify=True, with_link=True)
     worksheet = sh.get_worksheet(0)
-
-    print(sh.url)
-    sh.list_permissions()
-    print(worksheet)
+    instance.sheet_id = sh.id
+    instance.sheet_url = sh.url
+    instance.save()
+    print("Sheet Created and made public successfully")
     return sh.id, sh.url
