@@ -6,7 +6,7 @@ import Swal from 'sweetalert2'
 
 function Home() {
     const [FormList , setFormList] = useState([]);
-    const token = sessionStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
 
 
   const navigate = useNavigate();
@@ -43,7 +43,7 @@ function Home() {
           },
         }    
       ).then((res) => {
-            console.log(res.data.data.code);
+            console.log(res.data);
             console.log(res.data.status);
             if (res.data.status == true){
                 console.log("success")
@@ -66,6 +66,7 @@ function Home() {
         },
       }    
      ).then((res) => {
+      console.log(token);
         setFormList(res.data.data);
       },[]);
         } catch (error) {

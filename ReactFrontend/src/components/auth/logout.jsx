@@ -4,7 +4,7 @@ import React, { useEffect } from 'react';
 const Logout = () => {
 
   useEffect(() =>{
-    sessionStorage.removeItem("authToken");
+    localStorage.removeItem("authToken");
     window.location.href = `/login`;
   })
 

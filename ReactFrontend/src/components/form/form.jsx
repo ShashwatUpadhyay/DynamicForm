@@ -10,11 +10,15 @@ function Form() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [submitStatus, setSubmitStatus] = useState(null);
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
 
   useEffect(() => {
     setLoading(true);
-    axios.get(`${API_BASE_URL}form?code=${code}`)
+    axios.get(`${API_BASE_URL}form?code=${code}`,{ 
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    },)
       .then(res => {
         setForm(res.data.data);
         setLoading(false);

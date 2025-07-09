@@ -23,7 +23,7 @@ function FormEdit() {
     const [formTitle, setFormTitle] = useState();
     const [formDescription, setFormDescription] = useState();
     const [questions, setQuestions] = useState([]);
-    const token = sessionStorage.getItem("authToken");
+    const token = localStorage.getItem("authToken");
 
     // const [questions, setQuestions] = useState([
     //     {
@@ -62,7 +62,11 @@ function FormEdit() {
 
       if (timerRef.current) clearTimeout(timerRef.current);
         timerRef.current = setTimeout(() => {
-        axios.patch(API_BASE_URL + 'form/',data).then((res) => {
+        axios.patch(API_BASE_URL + 'form/',data,{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },).then((res) => {
             console.log(res.data.data);
             setIsSaving(false)
         },[]).catch((err) => {
@@ -71,7 +75,11 @@ function FormEdit() {
     }, 1000);
   };
     const addQuestion = (fid) => {
-        axios.post(API_BASE_URL + 'question/',{"form_id":fid}).then((res) => {
+        axios.post(API_BASE_URL + 'question/',{"form_id":fid},{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },).then((res) => {
             console.log(res.data.data);
             setQuestions([
               ...questions,res.data.data,
@@ -87,7 +95,11 @@ function FormEdit() {
           data : {
             "question_uid":qid
           }
-        }).then((res) => {
+        },{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },).then((res) => {
           console.log(res.data)
           if (res.data.status === true){
             setQuestions(questions.filter((q) => q.uid !== qid));
@@ -125,7 +137,11 @@ function FormEdit() {
             } 
         }
         console.log(data)
-        axios.patch(API_BASE_URL + 'question/',data).then((res) => {
+        axios.patch(API_BASE_URL + 'question/',data,{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },).then((res) => {
             console.log(res.data);
           setIsSaving(false);
             
@@ -152,7 +168,11 @@ function FormEdit() {
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
 
-      axios.patch(API_BASE_URL + 'choice/',{choice_id:cid, choice:value}).then((res) => {
+      axios.patch(API_BASE_URL + 'choice/',{choice_id:cid, choice:value},{ 
+        headers: {
+          Authorization: `Token ${token}`,
+        },
+      },).then((res) => {
         console.log(res.data);
         console.log(res.data.data);
       setIsSaving(false);
@@ -178,7 +198,11 @@ function FormEdit() {
         axios.post(API_BASE_URL + `choice/`,{
             "form_id" : fid,
             "question_id" : qid
-        }).then((res) => {
+        },{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },).then((res) => {
             if (res.data.status === true){
                 const newChoice = res.data.data;
                 setQuestions(
@@ -199,7 +223,11 @@ function FormEdit() {
             data: {
                 option_uid: uid
               }
-        }).then((res) => {
+        },{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },).then((res) => {
             if (res.data.status === true){
                 document.getElementById(`${uid}`).remove();
             }
@@ -210,8 +238,14 @@ function FormEdit() {
     };
 
     useEffect(() => {
+      console.log(token)
         try {
-            axios.get(API_BASE_URL + "form" + `?code=${code}`)
+            axios.get(API_BASE_URL + "form" + `?code=${code}`,{ 
+              headers: {
+                Authorization: `Token ${token}`,
+              },
+            },
+          )
               .then((res) => {                
                 if (res.data.status == 'success') {
                     setFormData(res.data.data);

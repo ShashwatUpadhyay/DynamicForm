@@ -3,62 +3,9 @@ import { Pie, Bar } from 'react-chartjs-2';
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { API_BASE_URL } from "/config";
-
-
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-} from 'chart.js';
 import FormHeader from './formHeader.jsx';
 
-ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement, Title);
-
-const dummySummary = {
-  totalResponses: 128,
-  avgScore: 7.4,
-  lastResponse: '2024-06-10 14:23',
-  questions: [
-    {
-      id: 1,
-      question: 'What is your favorite color?',
-      type: 'multiple choice',
-      chartType: 'pie',
-      options: ['Red', 'Blue', 'Green', 'Yellow'],
-      responses: [32, 54, 22, 20],
-    },
-    {
-      id: 2,
-      question: 'Select your hobbies',
-      type: 'checkbox',
-      chartType: 'bar',
-      options: ['Reading', 'Sports', 'Music', 'Travel'],
-      responses: [60, 40, 80, 50],
-    },
-    {
-      id: 3,
-      question: 'Any suggestions?',
-      type: 'long answer',
-      chartType: null,
-      responses: [
-        'Great form!',
-        'Loved the UI.',
-        'Add more options.',
-      ],
-    },
-  ],
-};
-
-const chartColors = [
-  '#3b82f6', '#f59e42', '#10b981', '#f43f5e', '#6366f1', '#fbbf24', '#22d3ee', '#a3e635',
-];
-
-function FormResponse() {
+function FormResponseTable() {
     const { code } = useParams();
     const navigate = useNavigate();
     const [responseCount, setResponseCount] = useState();
@@ -66,8 +13,9 @@ function FormResponse() {
     const token = localStorage.getItem("authToken");
     const [lastResponse, setLastResponse] = useState();
     const [todayResponses, setTodayResponses] = useState();
+    const [responses, setResponses] = useState([]);
     const [questions, setQuestions] = useState([]);
-    const [questionlen, setQuestionsLen] = useState();
+    const [responseLen, setResponseLen] = useState();
     const [hasSheet,setHasSheet] = useState();
     const [sheetUrl,setSheetUrl] = useState();
     const [initbtnLoading,setInitbtnLoading] = useState();
@@ -80,6 +28,18 @@ function FormResponse() {
         const hours = date.getHours().toString().padStart(2, '0');
         const minutes = date.getMinutes().toString().padStart(2, '0');
         return `${day}-${month}-${year} - ${hours}:${minutes}`;
+      }
+
+    function array_to_string(strr) {
+      var result;
+      try{
+        const validJson = strr.replace(/'/g, '"');
+        const arr = JSON.parse(validJson);
+        result = arr.join(', ');
+      }catch(err){
+        return strr;
+      }
+      return result;
       }
       
     const initialiseGoogleSheet = ((code) => {
@@ -102,23 +62,24 @@ function FormResponse() {
     })
     useEffect(() => {
         try {
-            axios.get(`${API_BASE_URL}response/get_response?code=${code}`,{ 
+            axios.get(`${API_BASE_URL}response/get_full_response?code=${code}`,{ 
               headers: {
                 Authorization: `Token ${token}`,
               },
             },)
               .then((res) => {                
+                console.log(res.data);
                 if (res.data.status === true) {
-                    console.log(res.data);
                     setResponseCount(res.data.data.total_responses);
                     setLastResponse(res.data.data.lastResponse)
                     setTodayResponses(res.data.data.today_responses)
+                    setResponses(res.data.data.responses)
                     setQuestions(res.data.data.questions)
-                    const questionArray = Object.values(res?.data?.data?.questions || {});
-                    setQuestionsLen(questionArray.length);
                     setMessage(res.data.message)
                     setHasSheet(res.data.data.has_sheet)
                     setSheetUrl(res.data.data.sheet_url)
+                    const questionArray = Object.values(res?.data?.data?.responses || {});
+                    setResponseLen(questionArray.length);
                 }
             }, []);
         } catch (error) {
@@ -129,8 +90,8 @@ function FormResponse() {
   return (
     <>
       <FormHeader activeTab={'responses'} formisSaving={false} code={code} />
-      <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh' }} className="py-10  font-[Verdana]">
-        <div className="max-w-2xl mx-auto flex flex-col gap-6 mt-[80px]">
+      <div style={{ backgroundColor: '#f3f4f6', minHeight: '100vh' }} className="py-10 w-[100vw]  font-[Verdana]">
+        <div className="max-w-6xl mx-auto flex flex-col gap-6 mt-[80px]">
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 ">
 
@@ -148,7 +109,7 @@ function FormResponse() {
             </div>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-3 gap-4 ">
-            <button onClick={() => {navigate(`/form/${code}/response/table`)}} className='text-center bg-blue-200'>
+            <button onClick={() => {navigate(`/form/${code}/response`)}} className='text-center bg-blue-200'>
                 View responses
             </button>
             <button className='text-center bg-blue-200'>
@@ -174,73 +135,33 @@ function FormResponse() {
           </div>
 
           {/* Questions & Graphs */}
-          { questionlen > 0 ? (
-          <div className="flex flex-col gap-8">
+          { responseLen > 0 ? (
+          <table className="bg-white overflow-scroll">
+            <thead><tr><td className='border'>S no.</td><td className='border'>Name</td>
             {questions.map((q, idx) => (
-              <div key={q.id} className="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
-                <div className="mb-4">
-                  <span className="font-semibold text-lg text-gray-800">Q{idx + 1}. {q.question}</span>
-                </div>
-                {q.chartType === 'pie' && (
-                  <Pie
-                    data={{
-                      labels: q.options,
-                      datasets: [
-                        {
-                          data: q.responses,
-                          backgroundColor: chartColors.slice(0, q.options.length),
-                        },
-                      ],
-                    }}
-                    options={{
-                      plugins: {
-                        legend: {
-                          position: 'bottom',
-                        },
-                      },
-                    }}
-                    className="w-full md:w-1/2 mx-auto"
-                  />
-                )}
-                {q.chartType === 'bar' && (
-                  <Bar
-                    data={{
-                      labels: q.options,
-                      datasets: [
-                        {
-                          label: 'Responses',
-                          data: q.responses,
-                          backgroundColor: chartColors.slice(0, q.options.length),
-                        },
-                      ],
-                    }}
-                    options={{
-                      plugins: {
-                        legend: {
-                          display: false,
-                        },
-                      },
-                      scales: {
-                        y: {
-                          beginAtZero: true,
-                        },
-                      },
-                    }}
-                    className="w-full md:w-2/3 mx-auto"
-                  />
-                )}
-                {q.chartType === '' && (
-                    <div className="flex flex-col gap-2 mt-2 max-h-[200px] overflow-scroll">
-                    {q.answers.map((resp, i) => (
-                      <div key={i} className="bg-gray-100 rounded max-w-full p-2 text-gray-700 text-sm">
-                        {resp.split(" ").slice(0, 6).join(" ")}...
-                      </div>
-                    ))}
-                  </div>
-                    )}
-              </div>
+              <td key={q.uid} className='border max-w-20'>{q.question}</td>
             ))}
-          </div>
+            </tr>
+            </thead>
+            <tbody>
+            {responses.map((r, idx) => (
+              <tr className="p-6 border">
+                <td key={r.uid} className="border">
+                  <span className="font-semibold text-lg text-gray-800">{idx + 1}</span>
+                </td>
+                <td key={r.uid + 1} className="border">
+                  <span className="font-semibold text-lg text-gray-800">{r.user.username}</span>
+                </td>
+              {r.response.map((a, aidx) => (
+                <td key={a.uid} className="border max-w-6 overflow-hidden">
+                  <span key={aidx + 1} className="font-semibold text-lg text-gray-800 max-w-20">{array_to_string(a.answer) || a.answer}</span>
+                </td>
+              ))}
+
+              </tr>
+            ))}
+            </tbody>
+          </table>
            )  : (
             <div className='text-center'>
               {message}
@@ -252,4 +173,4 @@ function FormResponse() {
   );
 }
 
-export default FormResponse; 
+export default FormResponseTable; 

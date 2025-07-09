@@ -2,17 +2,15 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from django.contrib.auth.models import User
+from index.models import User
 from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
-from .serializer import LoginSerializer
+from .serializer import LoginSerializer, RegisterSerializer
 # Create your views here.
 
 @api_view(['POST'])
 def login_api(request):
     data = request.data
-    username = data.get('username')
-    password = data.get('password')
     serializer = LoginSerializer(data=data)
     if serializer.is_valid():
         user = authenticate(
@@ -39,3 +37,22 @@ def login_api(request):
             "message" : "username and password is requuired.",
             "data" : {}
         })
+        
+@api_view(['POST'])
+def register_api(request):
+    data = request.data
+    print(data)
+    serializer = RegisterSerializer(data=data)
+    if serializer.is_valid():
+        user = User.objects.create_user(**serializer.data)
+        return Response({
+                "status": True,
+                "message": "Data is valid!",
+                "data" : serializer.data
+            })
+    else:
+        return Response({
+                "status": False,
+                "message": "Invalid data!",
+                "error" : serializer.errors
+            })

@@ -9,9 +9,11 @@ import Home from './components/form/home.jsx'
 import FormEdit from './components/form/fromEdit.jsx'
 import Form from './components/form/form.jsx'
 import FormResponse from './components/form/formResponse.jsx';
+import FormResponseTable from './components/form/formResponseTable.jsx';
 import Login from './components/auth/login.jsx';
 import Logout from './components/auth/logout.jsx'
 import ProtectRoute from './components/protect/protectRoute.jsx'
+import Registration from './components/auth/registration.jsx'
 
 function App() {
 
@@ -23,8 +25,10 @@ function App() {
         <Route path="/form/:code/edit" element={<ProtectRoute><FormEdit /></ProtectRoute>} />
         <Route path="/form/:code" element={<ProtectRoute><Form /></ProtectRoute>} />
         <Route path="/form/:code/response" element={<ProtectRoute><FormResponse /></ProtectRoute>} />
+        <Route path="/form/:code/response/table" element={<ProtectRoute><FormResponseTable /></ProtectRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<ProtectRoute><Logout /></ProtectRoute>} />
+        <Route path="/register" element={<Registration />} />
       </Routes>
     </>
   )

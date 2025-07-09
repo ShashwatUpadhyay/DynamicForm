@@ -69,6 +69,7 @@ class Answers(BaseModel):
 class Responses(BaseModel):
     code = models.CharField(max_length=100, unique=True)  
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name='responses')
+    user = models.ForeignKey(User,on_delete=models.CASCADE, related_name='form_submissions')
     responder_ip = models.GenericIPAddressField(blank=True, null=True)  # Store IP address of the responder
     responder_email = models.EmailField(blank=True, null=True)  # Store email if collect_email is True
     response = models.ManyToManyField(Answers,  related_name="answers")  # Store answers as a JSON object

@@ -5,7 +5,7 @@ const Welcome = () => {
   const navigate = useNavigate();
   const [Url,setUrl] = useState('/login')
   const [login,setLogin] = useState(false)
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
   useEffect(()=>{
     if (token){
       setUrl('/form');

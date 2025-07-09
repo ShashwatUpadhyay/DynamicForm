@@ -3,6 +3,11 @@ from .models import (
     Form,Question,Answers,Choices,User,Responses
 )
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['username']
+
 class ChoicesSerializer(serializers.ModelSerializer):
     class Meta:
         model = Choices
@@ -39,13 +44,16 @@ class FormSerializer(serializers.ModelSerializer):
 class AnswersSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answers
-        exclude = ['created_at','updated_at']
+        exclude = ['created_at','updated_at','id']
 
 
 class ResponseSerializer(serializers.ModelSerializer):
+    form = FormSerializer()
+    response = AnswersSerializer(many=True)
+    user = UserSerializer()
     class Meta:
         model = Responses
-        exclude = ['created_at','updated_at']
+        exclude = ['created_at','updated_at','id']
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:

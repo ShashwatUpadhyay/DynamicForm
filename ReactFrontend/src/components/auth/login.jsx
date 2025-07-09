@@ -2,13 +2,15 @@ import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { API_BASE_URL } from "/config";
+import { useNavigate } from 'react-router-dom';
 
 
 const Login = () => {
   const [username, setUsername] = useState('');
+  const navigate = useNavigate();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const token = sessionStorage.getItem("authToken");
+  const token = localStorage.getItem("authToken");
 
 
   const handleSubmit = (e) => {
@@ -21,10 +23,10 @@ const Login = () => {
     axios.post(`${API_BASE_URL}account/login/`,{username:username,password:password}).then((res) => {
       console.log(res.data);
       if (res.data.status === true){
-        sessionStorage.setItem("authToken", res.data.data.token);
+        localStorage.setItem("authToken", res.data.data.token);
         window.location.href = `/`;
       }else{
-        alert("invalid credential");
+        setError("invalid credential");
       }
     }).catch((err) => {
       console.log(err)
@@ -82,6 +84,12 @@ const Login = () => {
             Login
           </button>
         </form>
+          <div className="text-center text-sm mt-4">
+          Don't have an account?{' '}
+          <span onClick={() => navigate('/register')} className="text-purple-600 font-semibold cursor-pointer hover:underline" >
+            Register
+          </span>
+        </div>
         <div className="w-full flex items-center my-4">
           <div className="flex-grow h-px bg-gray-300" />
           <span className="mx-2 text-gray-400 text-sm">or</span>

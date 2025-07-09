@@ -36,7 +36,8 @@ class ResponsesViewSet(ModelViewSet):
         form = Form.objects.get(code = form_id)
         response = Responses.objects.create(
             code = generate_random_string(15),
-            form = form
+            form = form,
+            user = request.user
         )
         for q in responses:
             question = Question.objects.get(id = q)
@@ -58,6 +59,12 @@ class ResponsesViewSet(ModelViewSet):
         code = request.GET.get('code')
         form = Form.objects.get(code=code)
         responses = Responses.objects.filter(form=form)
+        if not responses.exists():
+            return Response({
+                "status": True,
+                "message": "No response submitted yet.",
+                "data": {}
+            })
         last_response = responses.latest().created_at
         today_start , tomorrow_start = convert_to_local_time_zone()
         today_responses = responses.filter(created_at__gte=today_start,
@@ -123,7 +130,56 @@ class ResponsesViewSet(ModelViewSet):
             "message": "Response Fetched!!",
             "data": data
         })
-    
+    @action(detail=False, methods=['get'])
+    def get_full_response(self, request):
+        code = request.GET.get('code')
+        form = Form.objects.get(code = code)
+        questions = form.questions.all()
+        responses = Responses.objects.filter(form=form)
+        if not responses.exists():
+            return Response({
+                "status": True,
+                "message": "No response submitted yet.",
+                "data": {}
+            })
+        last_response = responses.latest().created_at
+        today_start , tomorrow_start = convert_to_local_time_zone()
+        today_responses = responses.filter(created_at__gte=today_start,
+                                            created_at__lt=tomorrow_start
+                                        ).count()
+        questions = form.questions.all()
+        sheet_id, sheet_url = form.sheet_id ,form.sheet_url
+        print(sheet_id, sheet_url)
+        has_sheet = True
+        sheet_url = form.sheet_url
+        if sheet_url is None:
+            has_sheet = False
+        print(questions)
+        response_serializer = ResponseSerializer(instance=responses, many=True)
+        question_serializer = QuestionSerializer(instance=questions, many=True)
+        data={}
+        # if serializer.is_valid():
+        data = {
+            "total_responses": responses.count(),
+            "lastResponse": last_response,
+            "today_responses": today_responses,
+            "has_sheet": has_sheet,
+            "sheet_url": sheet_url,
+            "questions": question_serializer.data,
+            "responses": response_serializer.data
+        }
+        return Response({
+            "status": True,
+            "message": "Response Fetched!!",
+            "data": data
+        })
+        # else:
+        #     return Response({
+        #         "status": False,
+        #         "message": "Something went wrong",
+        #         "error": serializer.errors
+        #     })
+            
     @action(detail=False, methods=['get'])
     def create_sheet(self, request):
         code = request.GET.get('code')
@@ -163,7 +219,11 @@ class FormsAPI(APIView):
         })
         
 class FormAPI(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
+        print("user",request.user)        
         code = request.GET.get('code')
         form = Form.objects.get(code=code)
         serializer = FormSerializer(form)
@@ -175,8 +235,8 @@ class FormAPI(APIView):
  
     def post(self, request):
         try:
-            # data = request.data 
-            user = User.objects.first()
+            print(request.user)
+            user = request.user
             form = Form().create_blank_form(user)
             serializer = FormSerializer(form)
             return Response({
