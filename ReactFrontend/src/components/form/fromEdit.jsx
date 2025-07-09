@@ -21,6 +21,8 @@ function FormEdit() {
     const [isSaving , setIsSaving] = useState(false);
     const [FormData, setFormData] = useState([]);
     const [formTitle, setFormTitle] = useState();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [formDescription, setFormDescription] = useState();
     const [questions, setQuestions] = useState([]);
     const token = localStorage.getItem("authToken");
@@ -67,7 +69,7 @@ function FormEdit() {
             Authorization: `Token ${token}`,
           },
         },).then((res) => {
-            console.log(res.data.data);
+            console.log(res.data);
             setIsSaving(false)
         },[]).catch((err) => {
           console.log(err);
@@ -174,7 +176,6 @@ function FormEdit() {
         },
       },).then((res) => {
         console.log(res.data);
-        console.log(res.data.data);
       setIsSaving(false);
 
           
@@ -239,14 +240,16 @@ function FormEdit() {
 
     useEffect(() => {
       console.log(token)
-        try {
-            axios.get(API_BASE_URL + "form" + `?code=${code}`,{ 
+      setLoading(true);
+      try {
+        axios.get(API_BASE_URL + "form" + `?code=${code}`,{ 
               headers: {
                 Authorization: `Token ${token}`,
               },
             },
           )
-              .then((res) => {                
+          .then((res) => {                
+                setLoading(false);
                 if (res.data.status == 'success') {
                     setFormData(res.data.data);
                     setFormTitle(res.data.data.title);
@@ -258,7 +261,11 @@ function FormEdit() {
             console.log(error);
         }
     },[]);
-
+    if (loading) return <div className="flex justify-center items-center h-screen"><div
+    class="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"
+  ></div></div>;
+    if (error) return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+    // if (!form) return null;
   return (
     <>
     <FormHeader activeTab={'questions'} formisSaving={isSaving} code={code} />

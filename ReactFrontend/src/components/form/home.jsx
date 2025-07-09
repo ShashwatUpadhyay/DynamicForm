@@ -44,7 +44,6 @@ function Home() {
         }    
       ).then((res) => {
             console.log(res.data);
-            console.log(res.data.status);
             if (res.data.status == true){
                 console.log("success")
                 window.location.href = `/form/${res.data.data.code}/edit`;
@@ -66,7 +65,6 @@ function Home() {
         },
       }    
      ).then((res) => {
-      console.log(token);
         setFormList(res.data.data);
       },[]);
         } catch (error) {

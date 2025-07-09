@@ -72,7 +72,9 @@ function Form() {
       });
   };
 
-  if (loading) return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center h-screen"><div
+  class="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"
+></div></div>;
   if (error) return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   if (!form) return null;
 

@@ -19,6 +19,8 @@ function FormResponseTable() {
     const [hasSheet,setHasSheet] = useState();
     const [sheetUrl,setSheetUrl] = useState();
     const [initbtnLoading,setInitbtnLoading] = useState();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     function formatDateTime(datetimeStr) {
         const date = new Date(datetimeStr);
@@ -60,13 +62,16 @@ function FormResponseTable() {
               })
     })
     useEffect(() => {
-        try {
-            axios.get(`${API_BASE_URL}response/get_full_response?code=${code}`,{ 
-              headers: {
-                Authorization: `Token ${token}`,
-              },
-            },)
-              .then((res) => {                
+      setLoading(true);
+      
+      try {
+        axios.get(`${API_BASE_URL}response/get_full_response?code=${code}`,{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },)
+        .then((res) => {                
+                setLoading(false);
                 console.log(res.data);
                 if (res.data.status === true) {
                     setResponseCount(res.data.data.total_responses);
@@ -85,7 +90,11 @@ function FormResponseTable() {
             console.log(error);
         }
     },[]);
-
+    if (loading) return <div className="flex justify-center items-center h-screen"><div
+    class="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"
+  ></div></div>;
+    if (error) return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+    // if (!form) return null;
   return (
     <>
       <FormHeader activeTab={'responses'} formisSaving={false} code={code} />

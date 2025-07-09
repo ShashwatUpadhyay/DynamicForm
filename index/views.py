@@ -13,6 +13,7 @@ import time
 from utils.sheet import create_sheet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
+from .permission import IsFormCreator
 
 # Create your views here.
 
@@ -213,6 +214,15 @@ class FormAPI(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
+    def get_permissions(self):
+        if self.request.method == 'PATCH':
+            return [IsAuthenticated(), IsFormCreator()]
+        elif self.request.method == 'DELETE':
+            return [IsAuthenticated(), IsFormCreator()]
+        else:
+            return [IsAuthenticated()]
+
+    
     def get(self, request):
         print("user",request.user)        
         code = request.GET.get('code')
@@ -244,6 +254,8 @@ class FormAPI(APIView):
             })
     
     def patch(self, request):
+        permission_classes = [IsAuthenticated,IsFormCreator]
+        print(request.user)
         try:
             data = request.data
             if not data.get('form_id'):
@@ -254,6 +266,7 @@ class FormAPI(APIView):
                 })
                 
             form_obj = Form.objects.filter(id = data.get("form_id"))
+            print(form_obj[0].creator)
             if form_obj.exists():
                 serializer = FormSerializer(form_obj[0], data, partial=True)
                 if serializer.is_valid():

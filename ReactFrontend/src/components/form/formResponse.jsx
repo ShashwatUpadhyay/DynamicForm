@@ -71,6 +71,8 @@ function FormResponse() {
     const [hasSheet,setHasSheet] = useState();
     const [sheetUrl,setSheetUrl] = useState();
     const [initbtnLoading,setInitbtnLoading] = useState();
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
     function formatDateTime(datetimeStr) {
         const date = new Date(datetimeStr);
@@ -101,13 +103,16 @@ function FormResponse() {
               })
     })
     useEffect(() => {
-        try {
-            axios.get(`${API_BASE_URL}response/get_response?code=${code}`,{ 
-              headers: {
-                Authorization: `Token ${token}`,
-              },
-            },)
-              .then((res) => {                
+      setLoading(true);
+      
+      try {
+        axios.get(`${API_BASE_URL}response/get_response?code=${code}`,{ 
+          headers: {
+            Authorization: `Token ${token}`,
+          },
+        },)
+        .then((res) => {                
+                setLoading(false);
                 if (res.data.status === true) {
                     console.log(res.data);
                     setResponseCount(res.data.data.total_responses);
@@ -125,6 +130,12 @@ function FormResponse() {
             console.log(error);
         }
     },[]);
+
+    if (loading) return <div className="flex justify-center items-center h-screen"><div
+    class="w-10 h-10 border-4 border-t-blue-500 border-gray-300 rounded-full animate-spin"
+  ></div></div>;
+    if (error) return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
+    // if (!form) return null;
 
   return (
     <>
