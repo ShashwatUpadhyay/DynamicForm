@@ -149,16 +149,13 @@ class ResponsesViewSet(ModelViewSet):
                                         ).count()
         questions = form.questions.all()
         sheet_id, sheet_url = form.sheet_id ,form.sheet_url
-        print(sheet_id, sheet_url)
         has_sheet = True
         sheet_url = form.sheet_url
         if sheet_url is None:
             has_sheet = False
-        print(questions)
         response_serializer = ResponseSerializer(instance=responses, many=True)
         question_serializer = QuestionSerializer(instance=questions, many=True)
         data={}
-        # if serializer.is_valid():
         data = {
             "total_responses": responses.count(),
             "lastResponse": last_response,
@@ -173,12 +170,6 @@ class ResponsesViewSet(ModelViewSet):
             "message": "Response Fetched!!",
             "data": data
         })
-        # else:
-        #     return Response({
-        #         "status": False,
-        #         "message": "Something went wrong",
-        #         "error": serializer.errors
-        #     })
             
     @action(detail=False, methods=['get'])
     def create_sheet(self, request):

@@ -50,7 +50,6 @@ function FormResponseTable() {
         },
       },)
               .then((res) => { 
-                console.log(res.data);
                 if (res.data.status === true){
                   setHasSheet(res.data.data.sheet_created);
                   setSheetUrl(res.data.data.sheet_url);
