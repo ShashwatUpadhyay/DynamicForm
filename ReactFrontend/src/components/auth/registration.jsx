@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from "/config";
 import Swal from 'sweetalert2';
+import { GoogleLogin,GoogleOAuthProvider  } from '@react-oauth/google';
+
 
 const Registration = () => {
   const navigate = useNavigate();
@@ -18,6 +20,36 @@ const Registration = () => {
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const ClientID = '180420409981-rbkrghn9nogc8nh7o3s58dcgl3s91nd2.apps.googleusercontent.com';
+  
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}account/dj-rest-auth/register/`, {
+        method: 'POST',
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          // "X-CSRFToken": getCookie("csrftoken"),
+        },
+        body: JSON.stringify({
+          access_token: credentialResponse.credential,
+          provider: 'google',
+        }),
+      });
+
+      const data = await res.json();
+      console.log(data)
+      if (data.key) {
+        localStorage.setItem('authToken', data.key); // Store token for later use
+        console.log('Google login successful');
+        navigate('/form'); // Redirect after login
+      } else {
+        console.error('Login failed:', data);
+      }
+    } catch (err) {
+      console.error('Google login error', err);
+    }
+  };
 
   const validatePassword = (password) => {
     const messages = [];
@@ -192,6 +224,14 @@ const Registration = () => {
           <svg className="w-5 h-5" viewBox="0 0 48 48"><g><path fill="#4285F4" d="M24 9.5c3.54 0 6.7 1.22 9.19 3.22l6.85-6.85C35.64 2.7 30.18 0 24 0 14.82 0 6.71 5.82 2.69 14.29l7.98 6.2C12.36 13.36 17.74 9.5 24 9.5z"/><path fill="#34A853" d="M46.1 24.55c0-1.64-.15-3.22-.42-4.74H24v9.01h12.42c-.54 2.9-2.18 5.36-4.65 7.01l7.19 5.6C43.98 37.36 46.1 31.36 46.1 24.55z"/><path fill="#FBBC05" d="M10.67 28.84A14.5 14.5 0 019.5 24c0-1.68.29-3.3.8-4.84l-7.98-6.2A23.93 23.93 0 000 24c0 3.77.9 7.34 2.49 10.49l8.18-5.65z"/><path fill="#EA4335" d="M24 48c6.18 0 11.36-2.05 15.15-5.59l-7.19-5.6c-2.01 1.35-4.59 2.16-7.96 2.16-6.26 0-11.64-3.86-13.33-9.21l-8.18 5.65C6.71 42.18 14.82 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></g></svg>
           Sign up with Google
         </button>
+        <GoogleOAuthProvider clientId={ClientID}>
+          <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => {
+            console.log('Login Failed');
+          }}
+        />
+        </GoogleOAuthProvider>
         <div className="text-center text-sm mt-4">
           Already have an account?{' '}
           <span className="text-purple-600 font-semibold cursor-pointer hover:underline" onClick={() => navigate('/login')}>

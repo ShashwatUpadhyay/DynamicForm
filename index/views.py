@@ -14,7 +14,12 @@ from utils.sheet import create_sheet
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 from .permission import IsFormCreator
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.http import JsonResponse
 
+@ensure_csrf_cookie
+def get_csrf(request):
+    return JsonResponse({"detail": "CSRF cookie set"})
 # Create your views here.
 
 # GET,  POST, PUT, PATCH, DELETE
@@ -73,7 +78,6 @@ class ResponsesViewSet(ModelViewSet):
                                         ).count()
         questions = form.questions.all()
         sheet_id, sheet_url = form.sheet_id ,form.sheet_url
-        print(sheet_id, sheet_url)
         has_sheet = True
         sheet_url = form.sheet_url
         if sheet_url is None:
