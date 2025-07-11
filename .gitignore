@@ -1,3 +1,6 @@
 ./utils/credentials.json
 .env
 ./.env
+env
+env/
+./env
