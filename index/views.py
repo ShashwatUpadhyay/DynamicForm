@@ -218,15 +218,6 @@ class FormAPI(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     
-    def get_permissions(self):
-        if self.request.method == 'PATCH':
-            return [IsAuthenticated(), IsFormCreator()]
-        elif self.request.method == 'DELETE':
-            return [IsAuthenticated(), IsFormCreator()]
-        else:
-            return [IsAuthenticated()]
-
-    
     def get(self, request):
         print("user",request.user)        
         code = request.GET.get('code')
@@ -258,7 +249,6 @@ class FormAPI(APIView):
             })
     
     def patch(self, request):
-        permission_classes = [IsAuthenticated,IsFormCreator]
         print(request.user)
         try:
             data = request.data
@@ -302,6 +292,7 @@ class FormAPI(APIView):
             
     def delete(self, request):
         form_id = request.GET.get('code')
+        print(form_id)
         try:
             form = Form.objects.get(code=form_id)
             form.delete()

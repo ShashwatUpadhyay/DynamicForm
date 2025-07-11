@@ -1,5 +1,5 @@
 from django.urls import path, include
-from account.views import login_api,register_api,GoogleLogin
+from account.views import login_api,register_api,GoogleLogin,GoogleCredentialExchangeView
 
 urlpatterns = [
     path('dj-rest-auth/', include('dj_rest_auth.urls')),
@@ -9,5 +9,5 @@ urlpatterns = [
     path('register/',register_api),
 ]
 urlpatterns += [
-    path('dj-rest-auth/google/', GoogleLogin.as_view(), name='google_login')
+    path('dj-rest-auth/google/', GoogleCredentialExchangeView.as_view(), name='google_login')
 ]
