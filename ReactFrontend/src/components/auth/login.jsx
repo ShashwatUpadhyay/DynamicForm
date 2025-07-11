@@ -1,7 +1,7 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import { API_BASE_URL } from "/config";
+import { API_BASE_URL,ClientID } from "/config";
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin,GoogleOAuthProvider  } from '@react-oauth/google';
 
@@ -14,11 +14,12 @@ const Login = () => {
   const [csrftoken, setcsrftoken] = useState('');
   const [error, setError] = useState('');
   const token = localStorage.getItem("authToken");
-  const ClientID = '180420409981-rbkrghn9nogc8nh7o3s58dcgl3s91nd2.apps.googleusercontent.com';
 
 
   const handleGoogleSuccess = async (credentialResponse) => {
     console.log(credentialResponse)
+    console.log("Google credential/token:", credentialResponse.credential);
+
     try {
       const res = await fetch(`${API_BASE_URL}account/dj-rest-auth/google/`, {
         method: 'POST',
