@@ -5,7 +5,7 @@ from utils.utility import generate_random_string
 import uuid
 from django.db.models.signals import post_save
 from django.dispatch.dispatcher import receiver
-from utils.sheet import create_sheet
+# from utils.sheet import create_sheet
 # Create your models here.
 
 class User(AbstractUser, models.Model):

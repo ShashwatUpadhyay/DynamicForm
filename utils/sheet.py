@@ -1,11 +1,15 @@
 import gspread
 from google.oauth2.service_account import Credentials
 import json
+import os
+from django.conf import settings
+
+CREDENTIALS_PATH = os.path.join(settings.BASE_DIR, "utils", "credentials.json")
 
 
 scopes = ['https://www.googleapis.com/auth/spreadsheets','https://www.googleapis.com/auth/drive']
 
-with open('utils/credentials.json') as f:
+with open(CREDENTIALS_PATH) as f:
     service_account_info = json.load(f)
 
 

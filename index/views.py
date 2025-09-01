@@ -20,6 +20,9 @@ from django.http import JsonResponse
 @ensure_csrf_cookie
 def get_csrf(request):
     return JsonResponse({"detail": "CSRF cookie set"})
+
+def home(request):
+    return render(request, 'index/home.html')
 # Create your views here.
 
 # GET,  POST, PUT, PATCH, DELETE

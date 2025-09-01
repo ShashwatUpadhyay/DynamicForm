@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Form Builder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .hero {
+            text-align: center;
+            color: white;
+            margin-bottom: 3rem;
+        }
+        
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        .api-info {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .api-info h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .endpoint {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 5px;
+            margin: 0.5rem 0;
+            font-family: 'Courier New', monospace;
+            border-left: 4px solid #667eea;
+        }
+        
+        .tech-stack {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .tech-stack h2 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .tech-list {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .tech-item {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="hero">
+            <h1>Dynamic Form Builder</h1>
+            <p>Create, manage, and analyze custom forms with ease</p>
+        </div>
+        
+        <div class="features">
+            <div class="feature-card">
+                <h3>🚀 Dynamic Form Creation</h3>
+                <p>Build custom forms with multiple question types including multiple choice, checkboxes, short and long answers. Add, edit, and reorder questions dynamically.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>📊 Response Analytics</h3>
+                <p>View detailed analytics of form responses with charts and graphs. Track daily submissions and export data to Google Sheets automatically.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>🔐 User Authentication</h3>
+                <p>Secure user authentication system with token-based API access. Each user can manage their own forms and responses privately.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3>☁️ Google Sheets Integration</h3>
+                <p>Automatically sync form responses to Google Sheets for easy data management and sharing with team members.</p>
+            </div>
+        </div>
+        
+        <div class="api-info">
+            <h2>🔌 API Endpoints</h2>
+            <p>RESTful API for seamless integration:</p>
+            <div class="endpoint">POST /api/form/ - Create new form</div>
+            <div class="endpoint">GET /api/forms/ - Get user's forms</div>
+            <div class="endpoint">PATCH /api/form/ - Update form</div>
+            <div class="endpoint">POST /api/question/ - Add question to form</div>
+            <div class="endpoint">POST /api/responses/save_response/ - Submit form response</div>
+            <div class="endpoint">GET /api/responses/get_response/ - Get form analytics</div>
+        </div>
+        
+        <div class="tech-stack">
+            <h2>🛠️ Technology Stack</h2>
+            <div class="tech-list">
+                <span class="tech-item">Django 5.2</span>
+                <span class="tech-item">Django REST Framework</span>
+                <span class="tech-item">MySQL</span>
+                <span class="tech-item">Google Sheets API</span>
+                <span class="tech-item">Token Authentication</span>
+                <span class="tech-item">CORS Headers</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
