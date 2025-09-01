@@ -9,8 +9,8 @@ import { GoogleLogin,GoogleOAuthProvider  } from '@react-oauth/google';
 
 const Login = () => {
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('test');
+  const [password, setPassword] = useState('@Test123');
   const [csrftoken, setcsrftoken] = useState('');
   const [error, setError] = useState('');
   const token = localStorage.getItem("authToken");
