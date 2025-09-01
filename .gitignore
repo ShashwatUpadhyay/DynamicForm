@@ -4,3 +4,70 @@
 env
 env/
 ./env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+.eggs/
+
+# Django / SQLite
+*.sqlite3
+db.sqlite3
+*.db
+
+# Media / Static
+/media/
+staticfiles/
+*.log
+
+# Environments
+.env
+venv/
+ENV/
+env/
+.venv/
+
+# IDEs / Editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Migrations (optional, keep if you want clean repo)
+**/migrations/__pycache__/
+
+# Byte-compiled / cache
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.pickle    
+__pycache__/
+
+# Coverage / testing
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+htmlcov/
+
+# Pip
+pip-log.txt
+pip-delete-this-directory.txt
+
+# MyPy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# VSCode
+.vscode/*
