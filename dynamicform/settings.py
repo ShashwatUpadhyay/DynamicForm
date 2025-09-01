@@ -14,6 +14,7 @@ from pathlib import Path
 import os
 from dotenv import load_dotenv
 load_dotenv()
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -23,13 +24,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-#)_qqftduv72(^4q%_sg=3w1eobs9e8b@@r&mip1r=5rgcop6o'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
+if DEBUG:
+    ALLOWED_HOSTS.append('*')
 
 # Application definition
 
@@ -40,21 +43,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
     'rest_framework',
     "corsheaders",
     'account.apps.AccountConfig',
     'index',
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'allauth.socialaccount.providers.google',
-    'dj_rest_auth',
-    'dj_rest_auth.registration',
     'rest_framework.authtoken'
 ]
 
-SITE_ID = 1
+    # 'django.contrib.sites',
+    # 'allauth',
+    # 'allauth.account',
+    # 'allauth.socialaccount',
+    # 'allauth.socialaccount.providers.google',
+    # 'dj_rest_auth',
+    # 'dj_rest_auth.registration',
+
+
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -69,16 +74,14 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS: True
-CORS_ALLOW_HEADERS =  ['*']
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-auth-token',
+]
 CORS_ALLOW_CREDENTIALS: True
 CORS_ORIGIN_ALLOW_ALL = True
-CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:5173",  # Vite dev server
-]
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-]
-
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('CORS_ALLOWED_ORIGINS', '').split(',')
 
 ROOT_URLCONF = 'dynamicform.urls'
 
@@ -106,11 +109,11 @@ WSGI_APPLICATION = 'dynamicform.wsgi.application'
 DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'forms',
-            'USER': 'root',
-            'PASSWORD': '',
-            'HOST': 'localhost',  # Or the IP address/hostname of your MySQL server
-            'PORT': '3306',       # Default MySQL port
+            'NAME': os.getenv('DB_NAME'),
+            'USER': os.getenv('DB_USER'),
+            'PASSWORD': os.getenv('DB_PASSWORD'),
+            'HOST': os.getenv('DB_HOST'),  # Or the IP address/hostname of your MySQL server
+            'PORT': os.getenv('DB_PORT'),       # Default MySQL port
         }
     }
 
@@ -157,11 +160,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
-)
-
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -169,20 +167,6 @@ REST_FRAMEWORK = {
     ]
 }
 
-REST_USE_JWT = False  # if you're not using JWT
-ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_AUTHENTICATION_METHOD = "email"
-SOCIALACCOUNT_QUERY_EMAIL = True
-ACCOUNT_LOGIN_METHODS = {'email'}
-ACCOUNT_SIGNUP_FIELDS = ['email*', 'username*', 'password1*', 'password2*']
-
-REST_AUTH = {
-    'SIGNUP_FIELDS': {
-        'username': {'required': True},
-        'email': {'required': True},
-    }
-}
 
 GOOGLE_OAUTH_CLIENT_ID = os.getenv('GOOGLE_OAUTH_CLIENT_ID')
 GOOGLE_OAUTH_CLIENT_SECRET = os.getenv('GOOGLE_OAUTH_CLIENT_SECRET')
