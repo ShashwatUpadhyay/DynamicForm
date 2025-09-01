@@ -110,11 +110,11 @@ WSGI_APPLICATION = 'dynamicform.wsgi.application'
 DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('DB_NAME'),
-            'USER': os.getenv('DB_USER'),
-            'PASSWORD': os.getenv('DB_PASSWORD'),
-            'HOST': os.getenv('DB_HOST'),  # Or the IP address/hostname of your MySQL server
-            'PORT': os.getenv('DB_PORT'),       # Default MySQL port
+            'NAME': os.getenv('DB_NAME','shashwat$form'),
+            'USER': os.getenv('DB_USER','shashwat'),
+            'PASSWORD': os.getenv('DB_PASSWORD','MyStrongPassword1234$'),
+            'HOST': os.getenv('DB_HOST','shashwat.mysql.pythonanywhere-services.com'),  # Or the IP address/hostname of your MySQL server
+            'PORT': os.getenv('DB_PORT','3306'),       # Default MySQL port
         }
     }
 
