@@ -123,19 +123,19 @@ const Login = () => {
             Register
           </span>
         </div>
-        <div className="w-full flex items-center my-4">
-          <div className="flex-grow h-px bg-gray-300" />
-          <span className="mx-2 text-gray-400 text-sm">or</span>
-          <div className="flex-grow h-px bg-gray-300" />
-        </div>
-        <GoogleOAuthProvider clientId={ClientID}>
-          <GoogleLogin
-          onSuccess={handleGoogleSuccess}
-          onError={() => {
-            console.log('Login Failed');
-          }}
-        />
-        </GoogleOAuthProvider>
+        {/* <div className="w-full flex items-center my-4"> */}
+          {/* <div className="flex-grow h-px bg-gray-300" /> */}
+          {/* <span className="mx-2 text-gray-400 text-sm">or</span> */}
+          {/* <div className="flex-grow h-px bg-gray-300" /> */}
+        {/* </div> */}
+        {/* <GoogleOAuthProvider clientId={ClientID}> */}
+          {/* <GoogleLogin */}
+          {/* onSuccess={handleGoogleSuccess} */}
+          {/* onError={() => { */}
+            {/* console.log('Login Failed'); */}
+          {/* }} */}
+        {/* /> */}
+        {/* </GoogleOAuthProvider> */}
       </div>
     </div>
   );
