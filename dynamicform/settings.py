@@ -32,8 +32,8 @@ DEBUG = os.getenv('DEBUG')
 ALLOWED_HOSTS = ['shashwat.pythonanywhere.com','*']
 
 
-if DEBUG:
-    ALLOWED_HOSTS.append('*')
+# if DEBUG:
+#     ALLOWED_HOSTS.append('*')
 
 # Application definition
 
